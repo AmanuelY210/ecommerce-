@@ -294,7 +294,7 @@ export default function CheckoutPage() {
         {/* Step indicator */}
         <div className="flex items-center justify-center mb-6 gap-2 text-sm">
           <div className={`flex items-center gap-2 ${step === 'address' ? 'text-amz-orange font-semibold' : 'text-slate-400'}`}>
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${step === 'address' ? 'bg-amz-orange text-white' : step === 'payment' || step === 'verify' || step === 'success' ? 'bg-emerald-500 text-white' : 'bg-slate-200'}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${step === 'address' ? 'bg-amz-orange text-white' : ['payment', 'verify', 'success'].includes(step) ? 'bg-emerald-500 text-white' : 'bg-slate-200'}`}>
               {step !== 'address' ? <Check className="w-4 h-4" /> : '1'}
             </div> Address
           </div>

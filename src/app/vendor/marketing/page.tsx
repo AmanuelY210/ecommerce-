@@ -24,9 +24,19 @@ const NAV = [
   { label: 'Store Settings', href: '/vendor/settings', icon: Settings },
 ]
 
-const COUPONS = [
-  { code: 'COFFEE15', type: 'PERCENT', value: 15, used: 6, limit: 200, expiresAt: '2026-09-01' },
-  { code: 'WELCOME10', type: 'PERCENT', value: 10, used: 42, limit: 1000, expiresAt: '2026-10-01' },
+interface Coupon {
+  code: string
+  type: string
+  value: number
+  used: number
+  limit: number | null
+  minOrder?: number
+  expiresAt: string
+}
+
+const COUPONS: Coupon[] = [
+  { code: 'COFFEE15', type: 'PERCENT', value: 15, used: 6, limit: 200, minOrder: 800, expiresAt: '2026-09-01' },
+  { code: 'WELCOME10', type: 'PERCENT', value: 10, used: 42, limit: 1000, minOrder: 1000, expiresAt: '2026-10-01' },
 ]
 
 export default function VendorMarketingPage() {
@@ -34,18 +44,19 @@ export default function VendorMarketingPage() {
 }
 
 function MarketingContent() {
-  const [coupons, setCoupons] = useState(COUPONS)
+  const [coupons, setCoupons] = useState<Coupon[]>(COUPONS)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ code: '', type: 'PERCENT', value: '', minOrder: '', limit: '' })
 
   const create = () => {
     if (!form.code || !form.value) { toast.error('Code and value required'); return }
-    const newCoupon = {
+    const newCoupon: Coupon = {
       code: form.code.toUpperCase(),
       type: form.type,
       value: Number(form.value),
       used: 0,
       limit: form.limit ? Number(form.limit) : null,
+      minOrder: form.minOrder ? Number(form.minOrder) : 0,
       expiresAt: '2026-12-31',
     }
     setCoupons([...coupons, newCoupon])
@@ -92,7 +103,7 @@ function MarketingContent() {
                 <div>
                   <div className="font-mono font-bold text-lg">{c.code}</div>
                   <div className="text-xs text-slate-500">
-                    {c.type === 'PERCENT' ? `${c.value}% off` : `${ETB(c.value)} off`} · Min order: {ETB(Number(c.minOrder) || 0)} · Expires {c.expiresAt}
+                    {c.type === 'PERCENT' ? `${c.value}% off` : `${ETB(c.value)} off`} · Min order: {ETB(c.minOrder || 0)} · Expires {c.expiresAt}
                   </div>
                 </div>
                 <div className="text-right">
