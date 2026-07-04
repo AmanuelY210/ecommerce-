@@ -36,23 +36,44 @@ const CITIES: Record<string, string[]> = {
 const ALL_CITIES = Object.values(CITIES).flat()
 
 const CATEGORY_TREE = [
-  { name: 'Electronics', icon: 'Smartphone', children: ['Phones & Tablets', 'Laptops & Computers', 'Audio', 'TVs & Accessories', 'Cameras'] },
-  { name: 'Fashion', icon: 'Shirt', children: ["Men's Clothing", "Women's Clothing", 'Shoes', 'Bags', 'Watches', 'Jewelry'] },
-  { name: 'Home & Kitchen', icon: 'Home', children: ['Appliances', 'Cookware', 'Furniture', 'Bedding', 'Decor'] },
-  { name: 'Beauty & Health', icon: 'Heart', children: ['Skincare', 'Haircare', 'Makeup', 'Fragrance', 'Wellness'] },
-  { name: 'Groceries', icon: 'ShoppingBasket', children: ['Grains & Spices', 'Beverages', 'Snacks', 'Coffee & Tea', 'Household'] },
-  { name: 'Sports & Outdoors', icon: 'Dumbbell', children: ['Fitness', 'Football', 'Cycling', 'Outdoor Gear'] },
-  { name: 'Books & Stationery', icon: 'Book', children: ['Books', 'Office Supplies', 'Art Supplies', 'School'] },
-  { name: 'Baby & Kids', icon: 'Baby', children: ['Diapers', 'Toys', 'Baby Care', "Kids' Fashion"] },
-  { name: 'Automotive', icon: 'Car', children: ['Parts', 'Accessories', 'Motor oil', 'Tools'] },
-  { name: 'Made in Ethiopia', icon: 'Award', children: ['Habesha Kemis', 'Coffee', 'Spices', 'Handicrafts', 'Leather Goods'] },
+  { name: 'Electronics', icon: 'Smartphone', children: ['Phones & Tablets', 'Laptops & Computers', 'Audio', 'TVs & Accessories', 'Cameras', 'Smart Home', 'Gaming'] },
+  { name: 'Fashion', icon: 'Shirt', children: ["Men's Clothing", "Women's Clothing", 'Shoes', 'Bags', 'Watches', 'Jewelry', 'Sunglasses', 'Activewear'] },
+  { name: 'Home & Kitchen', icon: 'Home', children: ['Appliances', 'Cookware', 'Furniture', 'Bedding', 'Decor', 'Lighting', 'Storage & Organization'] },
+  { name: 'Beauty & Health', icon: 'Heart', children: ['Skincare', 'Haircare', 'Makeup', 'Fragrance', 'Wellness', 'Personal Care', 'Medical Supplies'] },
+  { name: 'Groceries', icon: 'ShoppingBasket', children: ['Grains & Spices', 'Beverages', 'Snacks', 'Coffee & Tea', 'Household', 'Dairy & Eggs', 'Canned & Packaged'] },
+  { name: 'Sports & Outdoors', icon: 'Dumbbell', children: ['Fitness', 'Football', 'Cycling', 'Outdoor Gear', 'Running', 'Swimming', 'Martial Arts'] },
+  { name: 'Books & Stationery', icon: 'Book', children: ['Books', 'Office Supplies', 'Art Supplies', 'School', 'Religious Books', 'E-Readers'] },
+  { name: 'Baby & Kids', icon: 'Baby', children: ['Diapers', 'Toys', 'Baby Care', "Kids' Fashion", 'Baby Food', 'Strollers & Carriers'] },
+  { name: 'Automotive', icon: 'Car', children: ['Parts', 'Accessories', 'Motor Oil', 'Tools', 'Tires & Wheels', 'Car Care'] },
+  { name: 'Made in Ethiopia', icon: 'Award', children: ['Habesha Kemis', 'Coffee', 'Spices', 'Handicrafts', 'Leather Goods', 'Honey', 'Woven Goods'] },
+  { name: 'Computers & Networking', icon: 'Laptop', children: ['Laptops', 'Desktops', 'Monitors', 'Printers', 'Networking', 'Components', 'Storage'] },
+  { name: 'Phones & Accessories', icon: 'Smartphone', children: ['Smartphones', 'Phone Cases', 'Chargers', 'Power Banks', 'Screen Protectors', 'Cables'] },
+  { name: 'Toys & Games', icon: 'Gamepad2', children: ['Board Games', 'Action Figures', 'Building Sets', 'Dolls', 'Educational Toys', 'Video Games'] },
+  { name: 'Pet Supplies', icon: 'PawPrint', children: ['Dog Food', 'Cat Food', 'Pet Toys', 'Aquarium', 'Pet Health', 'Pet Accessories'] },
+  { name: 'Garden & Outdoor', icon: 'Trees', children: ['Plants & Seeds', 'Gardening Tools', 'Pots & Planters', 'Outdoor Furniture', 'BBQ & Grilling', 'Pest Control'] },
+  { name: 'Tools & DIY', icon: 'Wrench', children: ['Power Tools', 'Hand Tools', 'Paint Supplies', 'Plumbing', 'Electrical', 'Safety Gear'] },
+  { name: 'Music & Instruments', icon: 'Music', children: ['Guitars', 'Keyboards', 'Drums', 'Audio Mixers', 'Traditional Ethiopian', 'Recording Gear'] },
+  { name: 'Office & Business', icon: 'Briefcase', children: ['Furniture', 'Stationery', 'Printers & Scanners', 'Networking', 'Office Supplies', 'Breakroom'] },
 ]
 
 const BRANDS = [
   'Tecno', 'Samsung', 'Apple', 'Huawei', 'Xiaomi', 'HP', 'Dell', 'Lenovo', 'Sony', 'JBL',
   'Nike', 'Adidas', 'Puma', 'Gucci', 'Louis Vuitton', 'Tommy Hilfiger', 'Levis', 'Zara',
   'Philips', 'LG', 'Panasonic', 'Braun', 'Nestle', 'Heineken', 'Bambu', 'Megenagna',
-  'Kuraz', 'Tomoca', 'Moyee', 'Garden of Coffee', 'Buna Buna'
+  'Kuraz', 'Tomoca', 'Moyee', 'Garden of Coffee', 'Buna Buna',
+  // Computer & networking brands
+  'Asus', 'Acer', 'MSI', 'Logitech', 'Canon', 'Epson', 'Cisco', 'TP-Link', 'Seagate', 'Western Digital',
+  'Intel', 'AMD', 'Nvidia', 'Kingston', 'Corsair',
+  // Pet supplies
+  'Pedigree', 'Whiskas', 'Royal Canin', 'Purina', 'Petco', 'Aquarium World',
+  // Garden & tools
+  'Black & Decker', 'Makita', 'Bosch', 'Stanley', 'Dewalt', 'Yamaha',
+  // Music & instruments
+  'Yamaha Guitars', 'Casio', 'Fender', 'Behringer', 'Shure', 'Masinko Ethiopia',
+  // Toys & games
+  'Lego', 'Hasbro', 'Mattel', 'Nintendo', 'PlayStation', 'Xbox',
+  // Office & business
+  'IKEA', 'Herman Miller', 'Brother', 'Ricoh', 'Staples',
 ]
 
 const VENDOR_NAMES = [
@@ -60,7 +81,10 @@ const VENDOR_NAMES = [
   'Lidet Baby Store', 'Megenagna Books', 'Kazanchis Beauty', 'Sarbet Home Center', 'Cmmrce Sports',
   'Tomoca Coffee Co.', 'Gulele Wholesale', 'Yeka Appliances', 'Nifas Silk Furniture', 'Akaki Auto Parts',
   'Cmc Grocery', 'Gola Shoes Ethiopia', 'Selam Stationery', 'Sunset Watches', 'Highland Outdoor',
-  'Awash Beverages', 'Lalibela Handicrafts', 'Dire Dawa Spices', 'Gondar Leather', 'Jimma Honey'
+  'Awash Beverages', 'Lalibela Handicrafts', 'Dire Dawa Spices', 'Gondar Leather', 'Jimma Honey',
+  // New vendors for new categories
+  'Pawtopia Pet Store', 'Bosco Garden Center', 'Makita Tools Ethiopia', 'Selam Music House',
+  'Toyland Addis', 'Bole Office World', 'Gaming Hub Ethiopia', 'PC Builder Addis', 'Cactus Garden Store',
 ]
 
 const PRODUCT_TEMPLATES: Record<string, { name: string; priceRange: [number, number]; brands: string[]; desc: string }[]> = {
@@ -155,6 +179,88 @@ const PRODUCT_TEMPLATES: Record<string, { name: string; priceRange: [number, num
     { name: 'Cross Mesobe Basket', priceRange: [1500, 7500], brands: ['Lalibela Handicrafts'], desc: 'Hand-woven traditional Ethiopian mesobe food basket.' },
     { name: 'Tigray Cotton Netela', priceRange: [1800, 7500], brands: ['Lalibela Handicrafts', 'Habesha Crafts'], desc: 'Tigray-style cotton netela shawl with hand-embroidered border.' },
   ],
+  'Computers & Networking': [
+    { name: 'Gaming Laptop 15.6"', priceRange: [55000, 220000], brands: ['Asus', 'MSI', 'HP', 'Dell'], desc: 'High-performance gaming laptop with RTX graphics, 16GB RAM, 1TB SSD, RGB backlit keyboard.' },
+    { name: 'Business Laptop 14"', priceRange: [35000, 95000], brands: ['Lenovo', 'HP', 'Dell', 'Asus'], desc: 'Lightweight business laptop with Intel Core i7, 8GB RAM, 512GB SSD, all-day battery.' },
+    { name: 'Desktop PC Tower', priceRange: [45000, 180000], brands: ['HP', 'Dell', 'Lenovo'], desc: 'Office desktop PC with Intel Core i5, 8GB RAM, 1TB HDD, Windows 11 Pro.' },
+    { name: '27" 4K Monitor', priceRange: [22000, 75000], brands: ['Asus', 'LG', 'Dell', 'Samsung'], desc: '27-inch 4K UHD IPS monitor with HDR, USB-C, and height-adjustable stand.' },
+    { name: 'Laser Printer', priceRange: [12000, 55000], brands: ['HP', 'Canon', 'Brother', 'Epson'], desc: 'Wireless monochrome laser printer with auto-duplex, 30ppm, mobile printing.' },
+    { name: 'WiFi Router AC1900', priceRange: [3500, 12000], brands: ['TP-Link', 'Cisco', 'Asus'], desc: 'Dual-band WiFi router with MU-MIMO, Gigabit ports, parental controls.' },
+    { name: 'External SSD 1TB', priceRange: [5500, 18000], brands: ['Samsung', 'Seagate', 'Western Digital', 'Kingston'], desc: 'USB 3.2 portable SSD with 1050MB/s read speed, shock-resistant.' },
+    { name: 'Mechanical Keyboard RGB', priceRange: [3500, 15000], brands: ['Logitech', 'Corsair', 'Asus'], desc: 'Mechanical gaming keyboard with Cherry MX switches, RGB lighting, programmable keys.' },
+    { name: 'Wireless Mouse Ergonomic', priceRange: [1200, 6500], brands: ['Logitech', 'HP', 'Microsoft'], desc: 'Ergonomic wireless mouse with silent clicks, 2.4GHz, 24-month battery.' },
+    { name: 'Webcam 4K', priceRange: [6500, 22000], brands: ['Logitech', 'HP', 'Lenovo'], desc: '4K UHD webcam with auto-focus, dual microphones, low-light correction.' },
+  ],
+  'Phones & Accessories': [
+    { name: 'Phone Case Clear', priceRange: [200, 1800], brands: ['Samsung', 'Apple', 'Tecno'], desc: 'Crystal clear TPU phone case, anti-yellowing, drop protection.' },
+    { name: 'Fast Charger 30W', priceRange: [800, 4500], brands: ['Samsung', 'Apple', 'Xiaomi', 'Tecno'], desc: 'USB-C PD fast charger with 30W output, compatible with most modern phones.' },
+    { name: 'Wireless Charging Pad', priceRange: [1200, 5500], brands: ['Samsung', 'Xiaomi', 'Apple'], desc: '10W Qi wireless charging pad with LED indicator, non-slip surface.' },
+    { name: 'Tempered Glass Protector', priceRange: [150, 1200], brands: ['Samsung', 'Tecno', 'Apple'], desc: '9H tempered glass screen protector with oleophobic coating, easy install.' },
+    { name: 'USB-C Cable 1m', priceRange: [200, 1500], brands: ['Samsung', 'Anker', 'Xiaomi'], desc: 'Braided USB-C to USB-C cable, 60W fast charge, 1m length, durable.' },
+    { name: 'Phone Stand Aluminum', priceRange: [600, 3500], brands: ['Logitech', 'Samsung'], desc: 'Adjustable aluminum phone stand, foldable, anti-slip silicone pads.' },
+    { name: 'Bluetooth Selfie Stick', priceRange: [800, 3500], brands: ['Tecno', 'Samsung'], desc: 'Bluetooth selfie stick with extendable arm and tripod base.' },
+    { name: 'Phone Gimbal Stabilizer', priceRange: [6500, 22000], brands: ['DJI', 'Hohem'], desc: '3-axis smartphone gimbal with active tracking, foldable design.' },
+  ],
+  'Toys & Games': [
+    { name: 'Building Blocks 500pc', priceRange: [1500, 8500], brands: ['Lego', 'Hasbro'], desc: '500-piece creative building blocks set, compatible with all major brands.' },
+    { name: 'Action Figure 6"', priceRange: [800, 4500], brands: ['Hasbro', 'Mattel'], desc: '6-inch posable action figure with accessories, collector-grade.' },
+    { name: 'Board Game Family', priceRange: [1200, 6500], brands: ['Hasbro', 'Mattel'], desc: 'Family board game for 2-6 players, ages 8+, easy to learn.' },
+    { name: 'Doll with Accessories', priceRange: [950, 5500], brands: ['Mattel'], desc: 'Fashion doll with 5 outfits and accessories, great for kids 3+.' },
+    { name: 'Educational Puzzle 100pc', priceRange: [450, 2200], brands: ['Hasbro', 'Mattel'], desc: '100-piece educational jigsaw puzzle for children ages 5+.' },
+    { name: 'Video Game Controller', priceRange: [3500, 12000], brands: ['PlayStation', 'Xbox', 'Nintendo'], desc: 'Wireless gaming controller with haptic feedback, 40h battery life.' },
+    { name: 'RC Car Off-Road', priceRange: [2500, 12000], brands: ['Hasbro'], desc: '4WD remote control off-road car, 1:18 scale, water-resistant, 30 min run time.' },
+    { name: 'Stuffed Animal Plush', priceRange: [550, 3500], brands: ['Mattel'], desc: 'Soft cuddly plush teddy, hypoallergenic filling, machine washable.' },
+  ],
+  'Pet Supplies': [
+    { name: 'Dry Dog Food 5kg', priceRange: [1800, 7500], brands: ['Pedigree', 'Royal Canin', 'Purina'], desc: 'Premium dry dog food for adult dogs, 5kg bag, balanced nutrition.' },
+    { name: 'Wet Cat Food 12pk', priceRange: [1200, 4500], brands: ['Whiskas', 'Royal Canin', 'Purina'], desc: '12-pack of 85g wet cat food pouches, various flavors.' },
+    { name: 'Dog Leash & Collar Set', priceRange: [550, 2500], brands: ['Petco'], desc: 'Adjustable dog collar with matching 1.2m leash, reflective stitching.' },
+    { name: 'Cat Litter 10L', priceRange: [800, 3500], brands: ['Petco'], desc: 'Clumping cat litter, 10L, odor control, low-dust formula.' },
+    { name: 'Aquarium Filter', priceRange: [1200, 6500], brands: ['Aquarium World'], desc: 'External aquarium filter for 100-300L tanks, 1500L/h flow rate.' },
+    { name: 'Pet Carrier Soft', priceRange: [1500, 6500], brands: ['Petco'], desc: 'Soft-sided pet carrier with mesh ventilation, airline-approved.' },
+    { name: 'Dog Chew Toy', priceRange: [250, 1500], brands: ['Petco', 'Pedigree'], desc: 'Durable natural rubber dog chew toy, non-toxic, dental-clean design.' },
+    { name: 'Cat Scratching Post', priceRange: [1800, 7500], brands: ['Petco'], desc: 'Multi-level cat scratching post with sisal rope and dangling toy.' },
+  ],
+  'Garden & Outdoor': [
+    { name: 'Ceramic Plant Pot Set 3pc', priceRange: [800, 3500], brands: ['Bosco Garden Center'], desc: 'Set of 3 ceramic plant pots with drainage, sizes S/M/L, white finish.' },
+    { name: 'Gardening Tool Set 6pc', priceRange: [1200, 5500], brands: ['Black & Decker', 'Stanley'], desc: '6-piece stainless steel gardening tool set with ergonomic handles and storage bag.' },
+    { name: 'BBQ Grill Charcoal', priceRange: [5500, 22000], brands: ['Bosco Garden Center'], desc: 'Charcoal BBQ grill with 50cm cooking surface, foldable legs, smoke vents.' },
+    { name: 'Outdoor Folding Chair', priceRange: [1500, 5500], brands: ['Highland Outdoor'], desc: 'Portable aluminum folding camp chair, supports 120kg, with cup holder.' },
+    { name: 'Tomato Seeds Pack', priceRange: [80, 450], brands: ['Bosco Garden Center'], desc: 'Heirloom tomato seeds pack, 50 seeds, high germination rate.' },
+    { name: 'Garden Hose 20m', priceRange: [1500, 5500], brands: ['Bosco Garden Center'], desc: '20m expandable garden hose with 7-function spray nozzle, leak-proof.' },
+    { name: 'Insect Repellent 500ml', priceRange: [350, 1500], brands: ['Bosco Garden Center'], desc: 'Plant-safe organic insect repellent, 500ml, ready-to-use spray.' },
+    { name: 'Patio Umbrella 3m', priceRange: [4500, 18000], brands: ['Sarbet Home Center'], desc: '3m tiltable patio umbrella with UV-resistant fabric, crank handle.' },
+  ],
+  'Tools & DIY': [
+    { name: 'Cordless Drill 18V', priceRange: [5500, 18000], brands: ['Black & Decker', 'Bosch', 'Makita', 'Dewalt'], desc: '18V cordless drill with 2 batteries, 30 accessories, hammer function.' },
+    { name: 'Tool Box 50pc', priceRange: [2500, 9500], brands: ['Stanley', 'Black & Decker'], desc: '50-piece mixed tool set in sturdy carrying case, ideal for home DIY.' },
+    { name: 'Circular Saw 1400W', priceRange: [6500, 22000], brands: ['Makita', 'Bosch', 'Dewalt'], desc: '1400W circular saw with 185mm blade, depth adjustment, dust blower.' },
+    { name: 'Paint Roller Set', priceRange: [550, 2500], brands: ['Stanley'], desc: 'Paint roller set with 9-inch roller, tray, extension pole, 2 covers.' },
+    { name: 'LED Work Light Rechargeable', priceRange: [1200, 5500], brands: ['Bosch', 'Black & Decker'], desc: 'Rechargeable LED work light, 10W, 360° rotation, magnetic base.' },
+    { name: 'Safety Goggles', priceRange: [200, 1200], brands: ['Stanley', 'Bosch'], desc: 'Anti-fog safety goggles with UV protection, comfortable foam padding.' },
+    { name: 'Measuring Tape 5m', priceRange: [250, 1500], brands: ['Stanley'], desc: '5m x 25mm measuring tape with magnetic hook, impact-resistant case.' },
+    { name: 'Angle Grinder 850W', priceRange: [3500, 12000], brands: ['Makita', 'Bosch', 'Dewalt'], desc: '850W angle grinder with 115mm disc, side handle, anti-vibration.' },
+  ],
+  'Music & Instruments': [
+    { name: 'Acoustic Guitar', priceRange: [5500, 35000], brands: ['Yamaha Guitars', 'Fender'], desc: 'Full-size acoustic guitar with spruce top, mahogany back, gig bag included.' },
+    { name: 'Electric Guitar', priceRange: [12000, 75000], brands: ['Fender', 'Yamaha Guitars'], desc: 'Solid-body electric guitar with humbucker pickups, tremolo bridge, cable included.' },
+    { name: 'Digital Keyboard 61-key', priceRange: [8500, 35000], brands: ['Yamaha Guitars', 'Casio'], desc: '61-key digital keyboard with 400 tones, 100 rhythms, USB-to-host.' },
+    { name: 'Electronic Drum Kit', priceRange: [25000, 85000], brands: ['Yamaha Guitars', 'Alesis'], desc: 'Compact electronic drum kit with mesh heads, 30 kits, headphones output.' },
+    { name: 'Audio Mixer 8ch', priceRange: [8500, 35000], brands: ['Behringer', 'Yamaha Guitars'], desc: '8-channel audio mixer with USB interface, 2 mic preamps, built-in FX.' },
+    { name: 'Masinko Traditional', priceRange: [1800, 7500], brands: ['Masinko Ethiopia'], desc: 'Traditional Ethiopian masinko single-string fiddle, hand-carved.' },
+    { name: 'Krar Traditional', priceRange: [2500, 9500], brands: ['Masinko Ethiopia'], desc: 'Traditional Ethiopian krar 5-string lyre, hand-carved with leather resonator.' },
+    { name: 'Condenser Microphone', priceRange: [3500, 15000], brands: ['Shure', 'Behringer'], desc: 'Large-diaphragm condenser microphone with shock mount, XLR cable.' },
+  ],
+  'Office & Business': [
+    { name: 'Office Chair Ergonomic', priceRange: [8500, 45000], brands: ['IKEA', 'Herman Miller'], desc: 'Ergonomic office chair with lumbar support, breathable mesh, 5-year warranty.' },
+    { name: 'Standing Desk Electric', priceRange: [22000, 75000], brands: ['IKEA'], desc: 'Electric height-adjustable standing desk, 120x60cm, memory presets.' },
+    { name: 'Filing Cabinet 3-Drawer', priceRange: [8500, 28000], brands: ['Staples', 'IKEA'], desc: '3-drawer metal filing cabinet with lock, accommodates A4 and legal size.' },
+    { name: 'Whiteboard 90x60cm', priceRange: [1500, 6500], brands: ['Staples'], desc: 'Magnetic whiteboard, 90x60cm, aluminum frame, marker tray included.' },
+    { name: 'Printer Paper A4 5 reams', priceRange: [1200, 3500], brands: ['Staples'], desc: '5 reams (2500 sheets) A4 80gsm white printer paper, jam-free.' },
+    { name: 'Office Stapler Heavy Duty', priceRange: [550, 2500], brands: ['Staples'], desc: 'Heavy-duty office stapler, 100-sheet capacity, includes 5000 staples.' },
+    { name: 'Cash Register POS', priceRange: [15000, 65000], brands: ['Brother', 'Ricoh'], desc: 'Point-of-sale cash register with receipt printer, 99 departments, USB.' },
+    { name: 'Projector Business 1080p', priceRange: [22000, 85000], brands: ['Epson', 'Canon'], desc: '1080p business projector, 4000 lumens, HDMI, VGA, wireless display.' },
+  ],
 }
 
 async function main() {
@@ -211,7 +317,7 @@ async function main() {
 
   for (let i = 1; i < VENDOR_NAMES.length; i++) {
     const v = extraVendorUsers[i-1]
-    const approved = i <= 16
+    const approved = i <= 28
     vendors.push(await db.vendor.create({
       data: {
         userId: v.id,
@@ -401,6 +507,11 @@ async function main() {
   await db.banner.create({ data: { title: 'Ethiopian Coffee Festival', image: img('banner-coffee', 1400, 500), link: '/products?cat=groceries', position: 'HOME_HERO', order: 1 } })
   await db.banner.create({ data: { title: 'Tech Deals Week', image: img('banner-tech', 1400, 500), link: '/products?cat=electronics', position: 'HOME_HERO', order: 2 } })
   await db.banner.create({ data: { title: 'Made in Ethiopia', image: img('banner-ethio', 1400, 500), link: '/products?cat=made-in-ethiopia', position: 'HOME_HERO', order: 3 } })
+  await db.banner.create({ data: { title: 'Gaming & Computing Sale', image: img('banner-gaming', 1400, 500), link: '/products?cat=computers-networking', position: 'HOME_HERO', order: 4 } })
+  await db.banner.create({ data: { title: 'Pet Lovers Special', image: img('banner-pets', 1400, 500), link: '/products?cat=pet-supplies', position: 'HOME_HERO', order: 5 } })
+  await db.banner.create({ data: { title: 'Garden & Tools Festival', image: img('banner-garden', 1400, 500), link: '/products?cat=garden-outdoor', position: 'HOME_HERO', order: 6 } })
+  await db.banner.create({ data: { title: 'Music & Instruments', image: img('banner-music', 1400, 500), link: '/products?cat=music-instruments', position: 'HOME_HERO', order: 7 } })
+  await db.banner.create({ data: { title: 'Office Equipment Sale', image: img('banner-office', 1400, 500), link: '/products?cat=office-business', position: 'HOME_HERO', order: 8 } })
 
   console.log('🎫 Creating support tickets...')
   const ticketSubjects = ['Order not delivered', 'Wrong product received', 'Refund request for order', 'Cannot login to my account', 'Question about product availability', 'Vendor did not respond', 'Payment failed but money deducted', 'Request for invoice']

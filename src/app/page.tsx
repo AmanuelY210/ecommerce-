@@ -22,6 +22,9 @@ const CAT_ICONS: Record<string, any> = {
   Electronics: '📱', Fashion: '👕', 'Home & Kitchen': '🏠', 'Beauty & Health': '💄',
   Groceries: '🛒', 'Sports & Outdoors': '⚽', 'Books & Stationery': '📚', 'Baby & Kids': '🧸',
   Automotive: '🚗', 'Made in Ethiopia': '🇪🇹',
+  'Computers & Networking': '💻', 'Phones & Accessories': '📲', 'Toys & Games': '🎮',
+  'Pet Supplies': '🐾', 'Garden & Outdoor': '🌱', 'Tools & DIY': '🔧',
+  'Music & Instruments': '🎸', 'Office & Business': '💼',
 }
 
 export default function HomePage() {
@@ -118,9 +121,9 @@ export default function HomePage() {
             </h2>
             <Link href="/products" className="amz-link text-sm hover:underline">{t('categories.seeAll')} →</Link>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-10 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 gap-3">
             {loading ? (
-              Array.from({length: 10}).map((_, i) => <Skeleton key={i} className="aspect-square rounded-lg" />)
+              Array.from({length: 18}).map((_, i) => <Skeleton key={i} className="aspect-square rounded-lg" />)
             ) : (
               categories.map((c) => (
                 <Link key={c.id} href={`/products?cat=${c.slug}`} className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-md hover:border-amz-orange transition-all flex flex-col items-center text-center group">

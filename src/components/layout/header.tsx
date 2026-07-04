@@ -216,14 +216,25 @@ export function Header() {
               <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=beauty-health')}>Beauty & Health</DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=groceries')}>Groceries</DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=made-in-ethiopia')}>Made in Ethiopia</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=computers-networking')}>Computers & Networking</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=phones-accessories')}>Phones & Accessories</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=toys-games')}>Toys & Games</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=pet-supplies')}>Pet Supplies</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=garden-outdoor')}>Garden & Outdoor</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=tools-diy')}>Tools & DIY</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=music-instruments')}>Music & Instruments</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/products?cat=office-business')}>Office & Business</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <NavLink href="/products?deals=1" label={t('nav.deals')} active={pathname === '/products'} />
           <NavLink href="/products?cat=electronics" label="Electronics" />
           <NavLink href="/products?cat=fashion" label="Fashion" />
-          <NavLink href="/products?cat=home-kitchen" label="Home & Kitchen" />
+          <NavLink href="/products?cat=computers-networking" label="Computers" />
           <NavLink href="/products?cat=groceries" label="Groceries" />
           <NavLink href="/products?cat=made-in-ethiopia" label="Made in Ethiopia" />
+          <NavLink href="/products?cat=pet-supplies" label="Pets" />
+          <NavLink href="/products?cat=tools-diy" label="Tools & DIY" />
           <NavLink href="/vendor" label={t('nav.sell')} />
           <NavLink href="/support" label={t('nav.customer')} />
           <div className="ml-auto flex items-center gap-1 pr-2 text-xs text-white/80 hidden md:flex">
