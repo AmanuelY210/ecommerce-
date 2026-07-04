@@ -143,3 +143,45 @@ Stage Summary:
 - Product limit enforcement works both client-side (disabled Add button + toast) and server-side (403 with upgrade message)
 - Vendor dashboard shows live subscription status banner with product usage progress bar
 - Lint clean, TypeScript clean, zero browser errors
+
+---
+Task ID: real-file-upload
+Agent: main
+Task: Fix document upload — was using mock picsum URLs, needs real file upload with validation
+
+Work Log:
+- Created /api/upload POST route that handles real file uploads:
+  • Accepts multipart/form-data with a 'file' field
+  • Validates file type (only JPG, JPEG, PNG, PDF allowed)
+  • Validates file size (max 5MB)
+  • Requires authentication (any logged-in user)
+  • Saves file to public/uploads/<userId>-<timestamp>-<safe-filename>
+  • Returns { url, fileName, size, type } on success
+  • Returns descriptive error messages on validation failure
+- Created reusable FileUpload component (src/components/shared/file-upload.tsx):
+  • Hidden <input type="file"> triggered by clicking the drop zone
+  • Drag & drop support (highlights drop zone on dragover)
+  • Real-time client-side validation (type + size) before uploading
+  • Shows upload progress (spinner) while uploading to /api/upload
+  • Shows success state with: image thumbnail or PDF icon, actual filename, file size (B/KB/MB), remove button
+  • Shows error state with red border + error message + "Click to try again" prompt
+  • Shows empty state with upload icon + "Click to upload or drag & drop" + "JPG, PNG, or PDF · max 5MB"
+- Updated /vendor/register documents step to use FileUpload component:
+  • Replaced mock picsum URL generation with real FileUpload components
+  • Added required flag for mandatory documents (National ID, Business License, TIN Certificate)
+  • Added validation before proceeding to review step (checks all required docs uploaded)
+  • Added helpful tips box with document photography guidance
+- Verified end-to-end:
+  • Uploaded a test PNG file → saved to public/uploads/ as <userId>-<timestamp>-national_id.png
+  • File preview shows: image thumbnail, filename, file size, remove button
+  • Tried uploading a .txt file → rejected with "Invalid file type. Only JPG, PNG, and PDF files are allowed."
+  • Error state shows red border + error message + "Click to try again" prompt
+
+Stage Summary:
+- Real file upload system working: /api/upload saves files to public/uploads/
+- FileUpload component is reusable (can be used in vendor registration, product images, future admin upload flows)
+- Client-side + server-side validation for file type (JPG/PNG/PDF) and size (max 5MB)
+- Drag & drop support
+- Image thumbnails and PDF icons in preview
+- Actual filenames and file sizes displayed
+- Lint clean, TypeScript clean, zero browser errors

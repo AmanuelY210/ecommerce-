@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { StorefrontShell } from '@/components/layout/storefront-shell'
+import { FileUpload } from '@/components/shared/file-upload'
 import { useAuth } from '@/lib/store'
 import { ETB, ETHIOPIAN_BANKS, CHAPA_METHODS } from '@/lib/helpers'
 import { ETHIOPIA_REGIONS, getCitiesForRegion, getSubCitiesForCity } from '@/lib/ethiopia-geo'
@@ -431,44 +432,44 @@ function VendorRegisterInner() {
           <Card className="p-6">
             <h2 className="text-lg font-bold mb-1 flex items-center gap-2"><FileText className="w-5 h-5" /> Upload Documents</h2>
             <p className="text-sm text-slate-500 mb-4">Upload clear photos or scans. Files must be JPG, PNG, or PDF, max 5MB each.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { key: 'nationalId', label: 'National ID / Passport *', desc: 'Front of Ethiopian ID or passport' },
-                { key: 'businessLicense', label: 'Business License *', desc: 'Valid trade license from Ethiopian government' },
-                { key: 'tinCertificate', label: 'TIN Certificate *', desc: 'Tax identification certificate' },
-                { key: 'storePhoto', label: 'Store Photo', desc: 'Photo of your physical store or warehouse' },
-                { key: 'selfieVerification', label: 'Selfie Verification (optional)', desc: 'Selfie holding your ID for verification' },
+                { key: 'nationalId', label: 'National ID / Passport', desc: 'Front of Ethiopian ID or passport', required: true },
+                { key: 'businessLicense', label: 'Business License', desc: 'Valid trade license from Ethiopian government', required: true },
+                { key: 'tinCertificate', label: 'TIN Certificate', desc: 'Tax identification certificate', required: true },
+                { key: 'storePhoto', label: 'Store Photo', desc: 'Photo of your physical store or warehouse', required: false },
+                { key: 'selfieVerification', label: 'Selfie Verification', desc: 'Selfie holding your ID for verification (optional)', required: false },
               ].map(d => (
-                <div key={d.key}>
-                  <Label>{d.label}</Label>
-                  <p className="text-xs text-slate-500 mb-1">{d.desc}</p>
-                  <div className="border-2 border-dashed rounded-lg p-3 text-center">
-                    {(documents as any)[d.key] ? (
-                      <div className="text-xs">
-                        <CheckCircle2 className="w-5 h-5 mx-auto text-emerald-500 mb-1" />
-                        Uploaded: <span className="font-mono">{(documents as any)[d.key].split('/').pop()?.slice(0, 25)}</span>
-                        <button className="block mx-auto mt-1 text-amz-link hover:underline" onClick={() => setDocuments(s => ({...s, [d.key]: ''}))}>Remove</button>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="w-5 h-5 mx-auto text-slate-400 mb-1" />
-                        <button
-                          className="text-xs amz-link hover:underline"
-                          onClick={() => {
-                            // Mock upload with picsum URL (real version would call file upload API)
-                            setDocuments(s => ({...s, [d.key]: `https://picsum.photos/seed/${d.key}-${Date.now()}/600/400`}))
-                            toast.success(`${d.label} uploaded`)
-                          }}
-                        >Click to upload</button>
-                      </>
-                    )}
-                  </div>
-                </div>
+                <FileUpload
+                  key={d.key}
+                  label={d.label}
+                  description={d.desc}
+                  required={d.required}
+                  value={(documents as any)[d.key] || ''}
+                  onChange={(url) => setDocuments(s => ({ ...s, [d.key]: url }))}
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  maxSize={5 * 1024 * 1024}
+                />
               ))}
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+              <strong>📌 Tips for clear documents:</strong>
+              <ul className="list-disc list-inside mt-1 space-y-0.5">
+                <li>Use good lighting and avoid shadows or glare</li>
+                <li>Make sure all text is readable and edges are visible</li>
+                <li>For IDs, photograph the front side clearly</li>
+                <li>PDF scans are preferred for multi-page documents</li>
+              </ul>
             </div>
             <div className="flex justify-between mt-6">
               <Button variant="outline" onClick={() => setStep('business')}><ChevronLeft className="w-4 h-4 mr-1" /> Back</Button>
-              <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={() => setStep('review')}>Review Application <ChevronRight className="w-4 h-4" /></Button>
+              <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={() => {
+                if (!documents.nationalId || !documents.businessLicense || !documents.tinCertificate) {
+                  toast.error('Please upload all required documents (National ID, Business License, TIN Certificate)')
+                  return
+                }
+                setStep('review')
+              }}>Review Application <ChevronRight className="w-4 h-4" /></Button>
             </div>
           </Card>
         )}
