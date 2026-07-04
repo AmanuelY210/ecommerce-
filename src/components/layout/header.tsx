@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { Search, ShoppingCart, MapPin, ChevronDown, Menu, Globe, User, Heart, Package, LayoutDashboard, ShieldCheck, Headphones, Store } from 'lucide-react'
 import { useT } from '@/hooks/use-t'
+import { useSettings } from '@/hooks/use-settings'
 import { useAuth, useCart, useLang, useUI } from '@/lib/store'
 import { LANGUAGES } from '@/lib/i18n'
 import {
@@ -16,6 +17,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/co
 
 export function Header() {
   const { t, lang } = useT()
+  const { get, getBool } = useSettings()
   const router = useRouter()
   const pathname = usePathname()
   const user = useAuth((s) => s.user)
@@ -43,6 +45,12 @@ export function Header() {
 
   return (
     <header className="amz-navy text-white sticky top-0 z-50 shadow-md">
+      {/* Announcement bar */}
+      {getBool('announcement_bar_active', true) && get('announcement_bar_text') && (
+        <div className="text-center text-xs py-1.5 px-4 text-white/90" style={{ backgroundColor: get('announcement_bar_color', '#232f3e') }}>
+          {get('announcement_bar_text')}
+        </div>
+      )}
       {/* Top bar */}
       <div className="max-w-[1500px] mx-auto px-2 sm:px-4 flex items-center gap-2 h-[60px]">
         {/* Mobile menu */}
@@ -79,7 +87,11 @@ export function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1 px-2 hover:border border-transparent hover:border-white rounded shrink-0">
-          <span className="text-2xl font-bold tracking-tight">et<span className="amz-text-yellow">market</span></span>
+          {get('logo_url') ? (
+            <img src={get('logo_url')} alt={get('site_name', 'ETMarket')} className="h-8" />
+          ) : (
+            <span className="text-2xl font-bold tracking-tight">{get('logo_text', 'et')}<span className="amz-text-yellow">{get('logo_text_highlight', 'market')}</span></span>
+          )}
           <span className="text-[10px] text-white/70 hidden sm:inline -mt-3">.et</span>
         </Link>
 
@@ -88,11 +100,12 @@ export function Header() {
           <MapPin className="w-4 h-4 text-white/70" />
           <div className="leading-tight">
             <div className="text-[11px] text-white/70 -mb-0.5">Deliver to</div>
-            <div className="text-sm font-semibold">Addis Ababa</div>
+            <div className="text-sm font-semibold">{get('header_deliver_to', 'Addis Ababa')}</div>
           </div>
         </div>
 
         {/* Search */}
+        {getBool('header_show_search', true) && (
         <form onSubmit={onSearch} className="flex-1 flex max-w-3xl mx-2 sm:mx-4 h-10 rounded-md overflow-hidden">
           <Input
             value={search}
@@ -104,8 +117,10 @@ export function Header() {
             <Search className="w-5 h-5 text-black" />
           </button>
         </form>
+        )}
 
         {/* Language */}
+        {getBool('header_show_language', true) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="hidden md:flex items-center gap-1 px-2 py-1.5 hover:border border-transparent hover:border-white rounded text-sm">
@@ -125,6 +140,7 @@ export function Header() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
 
         {/* Account */}
         <DropdownMenu>

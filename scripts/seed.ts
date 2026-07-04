@@ -917,14 +917,84 @@ async function main() {
 
   console.log('⚙️  Creating settings...')
   const settings = [
+    // ─── General / Marketplace ───
     { key: 'site_name', value: 'ETMarket' },
+    { key: 'site_tagline', value: "Ethiopia's Marketplace" },
     { key: 'currency', value: 'ETB' },
     { key: 'default_commission', value: '10' },
     { key: 'min_withdrawal', value: '1000' },
-    { key: 'support_email', value: 'support@etmarket.et' },
-    { key: 'support_phone', value: '+251911000003' },
     { key: 'maintenance_mode', value: 'false' },
     { key: 'otp_message', value: 'Your ETMarket verification code is {CODE}. Valid for 5 minutes.' },
+
+    // ─── Branding / Identity ───
+    { key: 'logo_url', value: '/logo.svg' },
+    { key: 'logo_text', value: 'et' }, // prefix before the orange part
+    { key: 'logo_text_highlight', value: 'market' }, // the orange-colored part
+    { key: 'favicon_url', value: '/logo.svg' },
+    { key: 'site_description', value: "Shop millions of products from trusted Ethiopian vendors. Pay with Chapa or your local bank. Fast delivery across Ethiopia." },
+
+    // ─── Contact Info ───
+    { key: 'support_email', value: 'support@etmarket.et' },
+    { key: 'support_phone', value: '+251911000003' },
+    { key: 'vendor_email', value: 'vendors@etmarket.et' },
+    { key: 'physical_address', value: 'Bole Road, Addis Ababa, Ethiopia' },
+    { key: 'business_hours', value: '24/7 Customer Support' },
+
+    // ─── Header Settings ───
+    { key: 'announcement_bar_active', value: 'true' },
+    { key: 'announcement_bar_text', value: '🚚 Free delivery in Addis Ababa on orders over 5,000 ETB · Pay with Chapa or your Ethiopian bank' },
+    { key: 'announcement_bar_color', value: '#232f3e' },
+    { key: 'header_show_search', value: 'true' },
+    { key: 'header_show_language', value: 'true' },
+    { key: 'header_deliver_to', value: 'Addis Ababa' },
+
+    // ─── Footer Settings ───
+    { key: 'footer_about', value: "ETMarket is Ethiopia's premier multi-vendor marketplace, connecting customers with verified vendors across all 14 regions. Shop with confidence — Chapa payments, Ethiopian bank transfers, and fast delivery nationwide." },
+    { key: 'footer_copyright', value: '© 2026 ETMarket Ethiopia. All rights reserved.' },
+    { key: 'footer_made_in', value: 'Made in Ethiopia with ❤️' },
+    { key: 'footer_show_about', value: 'true' },
+    { key: 'footer_show_sell', value: 'true' },
+    { key: 'footer_show_help', value: 'true' },
+    { key: 'footer_show_payment', value: 'true' },
+
+    // ─── Social Media ───
+    { key: 'social_facebook', value: 'https://facebook.com/etmarket' },
+    { key: 'social_twitter', value: 'https://twitter.com/etmarket' },
+    { key: 'social_instagram', value: 'https://instagram.com/etmarket' },
+    { key: 'social_telegram', value: 'https://t.me/etmarket' },
+    { key: 'social_youtube', value: 'https://youtube.com/@etmarket' },
+    { key: 'social_linkedin', value: '' },
+
+    // ─── Appearance / Theme ───
+    { key: 'theme_primary_color', value: '#131921' },   // header navy
+    { key: 'theme_secondary_color', value: '#232f3e' }, // sub-nav
+    { key: 'theme_accent_color', value: '#ff9900' },     // orange
+    { key: 'theme_button_color', value: '#ffd814' },     // yellow CTA
+    { key: 'theme_background_color', value: '#eaeded' }, // page bg
+    { key: 'theme_link_color', value: '#007185' },       // links
+    { key: 'theme_star_color', value: '#ffa41c' },       // ratings
+
+    // ─── SEO ───
+    { key: 'seo_meta_title', value: 'ETMarket — Ethiopia\'s Marketplace | Shop Online with Chapa & Ethiopian Banks' },
+    { key: 'seo_meta_description', value: "Shop millions of products from trusted Ethiopian vendors. Pay with Chapa or your local bank. Fast delivery across Ethiopia. Electronics, fashion, groceries, vehicles, real estate and more." },
+    { key: 'seo_meta_keywords', value: 'Ethiopia marketplace, Addis Ababa shopping, Chapa payment, Ethiopian e-commerce, online shopping Ethiopia, ETMarket' },
+    { key: 'seo_og_image', value: 'https://picsum.photos/seed/etmarket-og/1200/630' },
+
+    // ─── Payment ───
+    { key: 'chapa_secret_key', value: 'CHASECK_TEST_xxxxx' },
+    { key: 'chapa_public_key', value: 'CHAPUBK_TEST_xxxxx' },
+    { key: 'chapa_webhook_url', value: 'https://etmarket.et/api/payment/webhook' },
+    { key: 'payment_cod_enabled', value: 'true' },
+    { key: 'payment_bank_enabled', value: 'true' },
+    { key: 'payment_chapa_enabled', value: 'true' },
+
+    // ─── Features ───
+    { key: 'feature_wishlist', value: 'true' },
+    { key: 'feature_reviews', value: 'true' },
+    { key: 'feature_coupons', value: 'true' },
+    { key: 'feature_flash_deals', value: 'true' },
+    { key: 'feature_vendor_signup', value: 'true' },
+    { key: 'feature_guest_checkout', value: 'true' },
   ]
   for (const s of settings) {
     await db.setting.create({ data: s })
