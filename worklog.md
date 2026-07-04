@@ -93,3 +93,53 @@ Stage Summary:
 - Each of the 25 categories has only its relevant brands in both the storefront filter and vendor product form
 - Vendor product form brand dropdown cascades with category selection (disabled until category chosen, auto-clears brand when category changes)
 - Lint clean, TypeScript clean, zero browser errors
+
+---
+Task ID: vendor-subscription-system
+Agent: main
+Task: Implement vendor subscription-first onboarding — vendors must purchase a package before they can sell, with admin review
+
+Work Log:
+- Added 2 new Prisma models: VendorPackage (4 default packages with pricing + limits + features) and VendorSubscription (links vendor to package with status, payment, business info, bank info, store info, documents, review)
+- Updated Vendor model to add subscription relation
+- Pushed schema changes to DB and regenerated Prisma client
+- Added 4 default packages to seed script:
+  • Starter: 500 ETB/mo, 50 products, 10% commission, basic features
+  • Professional: 1,500 ETB/mo, 500 products, 8% commission, advanced features (marked Popular)
+  • Business: 3,000 ETB/mo, unlimited products, 5% commission, premium features
+  • Enterprise: Custom pricing, unlimited everything, 3% commission, VIP features
+- Seeded active Professional subscription for demo vendor (Addis Tech Hub) with full business/bank/store/documents info
+- Seeded 3 PENDING_APPROVAL subscriptions for pending vendors so admin has a review queue (Starter, Professional, Business plans)
+- Created /api/vendor-packages route (public GET + admin POST create)
+- Created /api/vendor-packages/[id] route (admin PATCH update + DELETE)
+- Created /api/vendor/subscriptions route (vendor GET current subscription + product count + at-limit flag; POST subscribe with payment + business info + bank + store + documents)
+- Created /api/admin/vendor-subscriptions route (admin GET all with filter; PATCH approve/reject/suspend/reactivate/extend — also auto-updates vendor.status, commissionRate, and notifies vendor)
+- Built /vendor/pricing public page: hero, monthly/yearly toggle, 4 package cards with feature lists, "How Vendor Onboarding Works" 5-step flow, contact CTA
+- Built /vendor/register 5-step flow:
+  • Step 1: Choose package (with billing cycle toggle)
+  • Step 2: Payment (Chapa mobile/card/transfer + 19 Ethiopian banks + payment verification reusing /api/payment/verify)
+  • Step 3: Business info (business name, type, license, TIN, VAT, region, city, sub-city, woreda, postal code — using cascading Ethiopia geography selectors) + Bank info (bank name, holder, account, Chapa account) + Store info (name, description, address, hours)
+  • Step 4: Documents upload (national ID, business license, TIN certificate, store photo, selfie verification — mock uploads via picsum URLs)
+  • Step 5: Review & submit (shows all collected info, submits to /api/vendor/subscriptions)
+- Updated /vendor dashboard to check subscription status FIRST and show appropriate screen:
+  • No subscription → "Activate your vendor subscription" with link to /vendor/pricing
+  • PENDING_APPROVAL → "Application Under Review" with package/payment details
+  • CANCELLED → "Application Not Approved" with resubmit button
+  • EXPIRED/SUSPENDED → "Subscription expired/suspended" with renew button
+  • ACTIVE → normal dashboard + new subscription status banner at top showing current plan, product usage (e.g., "57 / 500 products used"), renewal date, upgrade button, and progress bar
+- Updated /vendor/products page to enforce product limit: Add button disabled + shows "Limit reached" badge when vendor hits package max; API also enforces server-side (returns 403 with upgrade message)
+- Updated /admin/packages: full CRUD for vendor packages with edit dialog (name, slug, description, monthly/yearly pricing, product/storage/image/video limits, staff accounts, warehouses, commission rate, features, active/popular flags)
+- Updated /admin/vendor-subscriptions: tabbed view (All / Pending / Active / Expired / Cancelled) with stat cards, table of subscriptions, and detailed review dialog showing business info, bank info, store info, uploaded documents (image previews), and approve/reject/suspend/reactivate/extend actions
+- Updated /admin dashboard NAV to include "Vendor Subscriptions" and "Packages" menu items
+- Updated header "Sell on ETMarket" link to point to /vendor/pricing (was /vendor)
+- Updated homepage "Become a Seller" CTA to point to /vendor/pricing (was /register?role=VENDOR)
+- Refactored useEffect patterns in admin pages to avoid "accessed before declared" lint errors
+
+Stage Summary:
+- 4 vendor packages seeded (Starter 500, Professional 1500, Business 3000, Enterprise custom)
+- 4 vendor subscriptions seeded (1 active for demo vendor + 3 pending for admin review queue)
+- Vendor onboarding flow: Browse pricing → Choose package → Pay via Chapa/bank → Submit business profile → Upload documents → Admin reviews → Dashboard unlocked
+- Admin review queue shows 3 pending applications with full business/bank/store/document details
+- Product limit enforcement works both client-side (disabled Add button + toast) and server-side (403 with upgrade message)
+- Vendor dashboard shows live subscription status banner with product usage progress bar
+- Lint clean, TypeScript clean, zero browser errors

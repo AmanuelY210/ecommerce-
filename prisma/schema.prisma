@@ -84,6 +84,7 @@ model Vendor {
   reviews        Review[]
   withdrawals    Withdrawal[]
   coupons        Coupon[]
+  subscription   VendorSubscription?
 }
 
 // ───────────────────────── Catalog ─────────────────────────
@@ -406,4 +407,61 @@ model Setting {
   id    String @id @default(cuid())
   key   String @unique
   value String
+}
+
+// ───────────────────────── Vendor Subscription System ─────────────────────────
+
+model VendorPackage {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  priceMonthly    Float
+  priceYearly     Float    @default(0)
+  productLimit    Int      @default(50) // -1 = unlimited
+  storageLimitMb  Int      @default(500)
+  imageLimit      Int      @default(5)
+  videoLimit      Int      @default(0)
+  staffAccounts   Int      @default(1)
+  warehouses      Int      @default(1)
+  commissionRate  Float    @default(10)
+  order           Int      @default(0)
+  active          Boolean  @default(true)
+  popular         Boolean  @default(false)
+  // JSON: list of feature strings (e.g., ["basic_dashboard", "advanced_analytics", "api_access"])
+  features        String   @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  subscriptions   VendorSubscription[]
+}
+
+model VendorSubscription {
+  id              String   @id @default(cuid())
+  vendorId        String   @unique // one active subscription per vendor
+  packageId       String
+  status          String   @default("PENDING_PAYMENT") // PENDING_PAYMENT | PAYMENT_PROCESSING | ACTIVE | EXPIRED | SUSPENDED | CANCELLED | PENDING_RENEWAL | PENDING_APPROVAL
+  // Cycle: MONTHLY | YEARLY
+  billingCycle    String   @default("MONTHLY")
+  amountPaid      Float    @default(0)
+  paymentRef      String?
+  paymentProvider String?  // chapa | bank
+  paymentMethod   String?  // mobile | card | transfer
+  startedAt       DateTime?
+  expiresAt       DateTime?
+  autoRenew       Boolean  @default(false)
+  // Vendor onboarding information collected during registration
+  businessInfo    String?  // JSON: businessName, businessType, licenseNumber, tinNumber, vatNumber, address, region, city, subCity, woreda, postalCode
+  bankInfo        String?  // JSON: bankName, accountHolder, accountNumber, chapaAccount
+  storeInfo       String?  // JSON: storeName, storeDescription, storeAddress, businessHours, logo, banner
+  documents       String?  // JSON: nationalId, businessLicense, tinCertificate, storePhoto, selfieVerification (URLs)
+  // Review / approval
+  reviewedBy      String?
+  reviewNote      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  package         VendorPackage @relation(fields: [packageId], references: [id])
+  vendor          Vendor        @relation(fields: [vendorId], references: [id])
 }

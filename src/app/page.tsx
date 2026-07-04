@@ -252,7 +252,7 @@ export default function HomePage() {
                 <span>✓ Vendor dashboard & analytics</span>
               </div>
             </div>
-            <Button size="lg" className="amz-bg-yellow hover:bg-[#f7ca00] text-black font-bold" onClick={() => router.push('/register?role=VENDOR')}>
+            <Button size="lg" className="amz-bg-yellow hover:bg-[#f7ca00] text-black font-bold" onClick={() => router.push('/vendor/pricing')}>
               {t('hero.cta2')} →
             </Button>
           </div>

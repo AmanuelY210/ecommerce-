@@ -42,6 +42,7 @@ function ProductsContent() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
+  const [subscription, setSubscription] = useState<any>(null)
   const [form, setForm] = useState({
     name: '', description: '', price: '', comparePrice: '', stock: '', categoryId: '', brandId: '', sku: '', barcode: '', lowStockAt: '5',
   })
@@ -49,6 +50,7 @@ function ProductsContent() {
   useEffect(() => {
     fetch('/api/vendor/products').then(r => r.json()).then(d => { setProducts(d); setLoading(false) })
     fetch('/api/categories').then(r => r.json()).then(setCategories)
+    fetch('/api/vendor/subscriptions').then(r => r.json()).then(setSubscription)
   }, [])
 
   // Fetch brands filtered by selected category in the product form
@@ -75,7 +77,13 @@ function ProductsContent() {
     return () => { cancelled = true }
   }, [form.categoryId])
 
+  const atLimit = subscription && subscription.package.productLimit !== -1 && products.length >= subscription.package.productLimit
+
   const openAdd = () => {
+    if (atLimit) {
+      toast.error(`You've reached your package limit of ${subscription.package.productLimit} products. Upgrade your plan to add more.`)
+      return
+    }
     setEditing(null)
     setForm({ name: '', description: '', price: '', comparePrice: '', stock: '', categoryId: categories[0]?.id || '', brandId: '', sku: '', barcode: '', lowStockAt: '5' })
     setOpen(true)
@@ -133,8 +141,13 @@ function ProductsContent() {
 
   return (
     <div className="space-y-4">
-      <SectionHeader title="My Products" description={`${products.length} products listed`} action={
-        <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Add Product</Button>
+      <SectionHeader title="My Products" description={`${products.length}${subscription?.package?.productLimit !== -1 ? ` / ${subscription.package.productLimit}` : ''} products listed`} action={
+        <div className="flex items-center gap-2">
+          {atLimit && (
+            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Limit reached — <a href="/vendor/pricing" className="underline ml-1">Upgrade</a></Badge>
+          )}
+          <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd} disabled={atLimit}><Plus className="w-4 h-4 mr-1" /> Add Product</Button>
+        </div>
       } />
 
       {products.length === 0 ? (

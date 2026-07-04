@@ -27,6 +27,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Name, price, category required' }, { status: 400 })
   }
 
+  // Enforce package product limit
+  const sub = await db.vendorSubscription.findUnique({
+    where: { vendorId: session.vendorId },
+    include: { package: true },
+  })
+  if (!sub || sub.status !== 'ACTIVE') {
+    return NextResponse.json({ error: 'You need an active subscription to add products. Subscribe at /vendor/pricing' }, { status: 403 })
+  }
+  if (sub.package.productLimit !== -1) {
+    const currentCount = await db.product.count({ where: { vendorId: session.vendorId } })
+    if (currentCount >= sub.package.productLimit) {
+      return NextResponse.json({ error: `You've reached your ${sub.package.name} plan limit of ${sub.package.productLimit} products. Please upgrade your plan.` }, { status: 403 })
+    }
+  }
+
   const slugBase = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   const slug = `${slugBase}-${Date.now().toString(36)}`
 

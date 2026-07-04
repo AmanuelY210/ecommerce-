@@ -446,7 +446,7 @@ const PRODUCT_TEMPLATES: Record<string, { name: string; priceRange: [number, num
 
 async function main() {
   console.log('🧹 Cleaning existing data...')
-  const tables = ['ModerationLog','AuditLog','Notification','Coupon','Banner','TicketMessage','Ticket','Delivery','Refund','Payment','OrderItem','Order','Wishlist','CartItem','Cart','Review','Product','Brand','Category','Withdrawal','Vendor','Address','User','Setting']
+  const tables = ['VendorSubscription','VendorPackage','ModerationLog','AuditLog','Notification','Coupon','Banner','TicketMessage','Ticket','Delivery','Refund','Payment','OrderItem','Order','Wishlist','CartItem','Cart','Review','Product','Brand','Category','Withdrawal','Vendor','Address','User','Setting']
   for (const t of tables) {
     await (db as any)[t].deleteMany({})
   }
@@ -498,7 +498,11 @@ async function main() {
 
   for (let i = 1; i < VENDOR_NAMES.length; i++) {
     const v = extraVendorUsers[i-1]
-    const approved = i <= 55
+    // Vendors at indices 30, 31, 32 are PENDING (so admin has pending applications to review)
+    // Vendors at indices 33, 34 are SUSPENDED, 35+ REJECTED (after the approved 29)
+    const approved = i <= 29
+    const isPending = i >= 30 && i <= 32
+    const isSuspended = i >= 33 && i <= 34
     vendors.push(await db.vendor.create({
       data: {
         userId: v.id,
@@ -511,7 +515,7 @@ async function main() {
         licenseNumber: i <= 16 ? `AA/14/00${10000+i}` : null,
         taxNumber: i <= 16 ? `000123${1000+i}` : null,
         verified: i <= 16,
-        status: approved ? 'APPROVED' : i === 17 ? 'PENDING' : i === 18 ? 'SUSPENDED' : 'REJECTED',
+        status: isPending ? 'PENDING' : isSuspended ? 'SUSPENDED' : approved ? 'APPROVED' : 'REJECTED',
         commissionRate: 8 + (i % 5),
         rating: 3.5 + (i % 15) / 10,
         reviewCount: 20 + i * 7,
@@ -886,6 +890,154 @@ async function main() {
   ]
   for (const s of settings) {
     await db.setting.create({ data: s })
+  }
+
+  console.log('📦 Creating vendor packages...')
+  const packages = [
+    {
+      name: 'Starter', slug: 'starter',
+      description: 'Perfect for small businesses just getting started online. List up to 50 products and start selling across Ethiopia.',
+      priceMonthly: 500, priceYearly: 5000,
+      productLimit: 50, storageLimitMb: 500, imageLimit: 5, videoLimit: 0,
+      staffAccounts: 1, warehouses: 1, commissionRate: 10,
+      order: 1, active: true, popular: false,
+      features: JSON.stringify(['basic_dashboard', 'basic_analytics', 'chapa_payments', 'email_support', 'standard_commission']),
+    },
+    {
+      name: 'Professional', slug: 'professional',
+      description: 'For growing businesses ready to scale. List up to 500 products, run promotions, and lower your commission rate.',
+      priceMonthly: 1500, priceYearly: 15000,
+      productLimit: 500, storageLimitMb: 2000, imageLimit: 10, videoLimit: 1,
+      staffAccounts: 3, warehouses: 2, commissionRate: 8,
+      order: 2, active: true, popular: true,
+      features: JSON.stringify(['basic_dashboard', 'advanced_analytics', 'promotions', 'coupons', 'store_banner', 'priority_approval', 'lower_commission', 'featured_products', 'chapa_payments', 'priority_support']),
+    },
+    {
+      name: 'Business', slug: 'business',
+      description: 'For established businesses that need unlimited products, API access, bulk upload, and premium analytics.',
+      priceMonthly: 3000, priceYearly: 30000,
+      productLimit: -1, storageLimitMb: 10000, imageLimit: 20, videoLimit: 5,
+      staffAccounts: 10, warehouses: 5, commissionRate: 5,
+      order: 3, active: true, popular: false,
+      features: JSON.stringify(['unlimited_products', 'unlimited_categories', 'premium_analytics', 'api_access', 'bulk_upload', 'advanced_reports', 'store_verification_badge', 'featured_store', 'priority_support', 'lowest_commission', 'chapa_payments', 'promotions', 'coupons', 'store_banner']),
+    },
+    {
+      name: 'Enterprise', slug: 'enterprise',
+      description: 'Custom solution for large enterprises with multiple stores, warehouses, ERP integration, and dedicated account manager.',
+      priceMonthly: 0, priceYearly: 0, // Custom pricing
+      productLimit: -1, storageLimitMb: -1, imageLimit: -1, videoLimit: -1,
+      staffAccounts: -1, warehouses: -1, commissionRate: 3,
+      order: 4, active: true, popular: false,
+      features: JSON.stringify(['unlimited_everything', 'multiple_store_managers', 'multiple_warehouses', 'dedicated_account_manager', 'custom_commission', 'custom_integrations', 'erp_integration', 'highest_search_ranking', 'vip_support']),
+    },
+  ]
+  const packageMap: Record<string, any> = {}
+  for (const p of packages) {
+    packageMap[p.slug] = await db.vendorPackage.create({ data: p })
+  }
+
+  console.log('🎫 Creating vendor subscription for demo vendor...')
+  // The demo vendor (Addis Tech Hub) has an active Professional subscription
+  const now = new Date()
+  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+  await db.vendorSubscription.create({
+    data: {
+      vendorId: vendors[0].id,
+      packageId: packageMap['professional'].id,
+      status: 'ACTIVE',
+      billingCycle: 'MONTHLY',
+      amountPaid: 1500,
+      paymentRef: 'CHAPA-PROFESS-' + Math.random().toString(36).substring(2, 12).toUpperCase(),
+      paymentProvider: 'chapa',
+      paymentMethod: 'mobile',
+      startedAt: now,
+      expiresAt,
+      autoRenew: true,
+      businessInfo: JSON.stringify({
+        businessName: 'Addis Tech Hub PLC',
+        businessType: 'COMPANY',
+        licenseNumber: 'AA/14/0034567',
+        tinNumber: '0001234567',
+        vatNumber: '0001234567001',
+        address: 'Bole, Addis Ababa',
+        region: 'Addis Ababa', city: 'Addis Ababa', subCity: 'Bole',
+        woreda: 'Woreda 03', postalCode: '1000',
+      }),
+      bankInfo: JSON.stringify({
+        bankName: 'Commercial Bank of Ethiopia',
+        accountHolder: 'Addis Tech Hub PLC',
+        accountNumber: '1000-2034-567890',
+        chapaAccount: 'addistechhub@chapa.et',
+      }),
+      storeInfo: JSON.stringify({
+        storeName: 'Addis Tech Hub',
+        storeDescription: 'Authorized electronics retailer in Addis Ababa since 2015.',
+        storeAddress: 'Bole Road, Addis Ababa',
+        businessHours: 'Mon-Sat 9:00-19:00',
+      }),
+      documents: JSON.stringify({
+        nationalId: 'https://picsum.photos/seed/id-card/400/300',
+        businessLicense: 'https://picsum.photos/seed/license/400/300',
+        tinCertificate: 'https://picsum.photos/seed/tin-cert/400/300',
+        storePhoto: 'https://picsum.photos/seed/store-photo/600/400',
+        selfieVerification: 'https://picsum.photos/seed/selfie/400/400',
+      }),
+      reviewedBy: admin.id,
+      reviewNote: 'Documents verified. Approved.',
+      reviewedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+    },
+  })
+
+  // Also create pending subscriptions for all pending vendors (so admin has queue to review)
+  const pendingVendors = vendors.filter((v: any) => v.status === 'PENDING')
+  const pkgSlugs = ['starter', 'professional', 'business']
+  for (let pi = 0; pi < pendingVendors.length; pi++) {
+    const pendingVendor = pendingVendors[pi]
+    const pkgSlug = pkgSlugs[pi % pkgSlugs.length]
+    const pkg = packageMap[pkgSlug]
+    if (!pendingVendor || !pkg) continue
+    await db.vendorSubscription.create({
+      data: {
+        vendorId: pendingVendor.id,
+        packageId: pkg.id,
+        status: 'PENDING_APPROVAL',
+        billingCycle: 'MONTHLY',
+        amountPaid: pkg.priceMonthly,
+        paymentRef: `CHAPA-${pkg.slug.toUpperCase()}-${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
+        paymentProvider: 'chapa',
+        paymentMethod: pi % 2 === 0 ? 'mobile' : 'transfer',
+        startedAt: now,
+        expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+        autoRenew: false,
+        businessInfo: JSON.stringify({
+          businessName: pendingVendor.storeName,
+          businessType: 'SME',
+          licenseNumber: `AA/14/00${80000+pi}`,
+          tinNumber: `000${80000+pi}0000`,
+          address: 'Bole, Addis Ababa',
+          region: 'Addis Ababa', city: 'Addis Ababa', subCity: ['Bole','Yeka','Kirkos','Arada'][pi % 4],
+          woreda: `Woreda ${pi+1}`, postalCode: '1000',
+        }),
+        bankInfo: JSON.stringify({
+          bankName: ['Commercial Bank of Ethiopia','Dashen Bank','Bank of Abyssinia','Awash Bank'][pi % 4],
+          accountHolder: pendingVendor.storeName,
+          accountNumber: `1000-${2000+pi}-${30000+pi}`,
+        }),
+        storeInfo: JSON.stringify({
+          storeName: pendingVendor.storeName,
+          storeDescription: `${pendingVendor.storeName} — quality products at fair prices for Ethiopian customers.`,
+          storeAddress: 'Bole Road, Addis Ababa',
+          businessHours: 'Mon-Sat 9:00-19:00',
+        }),
+        documents: JSON.stringify({
+          nationalId: `https://picsum.photos/seed/${pendingVendor.slug}-id/400/300`,
+          businessLicense: `https://picsum.photos/seed/${pendingVendor.slug}-license/400/300`,
+          tinCertificate: `https://picsum.photos/seed/${pendingVendor.slug}-tin/400/300`,
+          storePhoto: `https://picsum.photos/seed/${pendingVendor.slug}-store/600/400`,
+          selfieVerification: pi === 0 ? `https://picsum.photos/seed/${pendingVendor.slug}-selfie/400/400` : undefined,
+        }),
+      },
+    })
   }
 
   console.log('📋 Creating audit logs...')

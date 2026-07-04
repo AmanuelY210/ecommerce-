@@ -36,7 +36,9 @@ export default function VendorDashboard() {
 
 function VendorContent() {
   const [data, setData] = useState<any>(null)
+  const [subscription, setSubscription] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [subLoading, setSubLoading] = useState(true)
   const user = useAuth((s) => s.user)
 
   useEffect(() => {
@@ -44,7 +46,83 @@ function VendorContent() {
       setData(d)
       setLoading(false)
     })
+    fetch('/api/vendor/subscriptions').then(r => r.json()).then(d => {
+      setSubscription(d)
+      setSubLoading(false)
+    })
   }, [])
+
+  // While subscription check is loading, show a loading state
+  if (subLoading) {
+    return <div className="space-y-4">{Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}</div>
+  }
+
+  // No subscription — prompt to subscribe
+  if (!subscription) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center mb-4">
+          <Store className="w-8 h-8 text-amber-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Activate your vendor subscription</h2>
+        <p className="text-slate-500 mb-4 max-w-md mx-auto">You need an active subscription to start selling on ETMarket. Choose a package and complete the onboarding flow.</p>
+        <Button asChild className="amz-bg-yellow hover:bg-[#f7ca00] text-black">
+          <a href="/vendor/pricing">View Packages & Subscribe →</a>
+        </Button>
+      </Card>
+    )
+  }
+
+  // Subscription pending admin review
+  if (subscription.status === 'PENDING_APPROVAL') {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-8 h-8 text-blue-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Application Under Review</h2>
+        <p className="text-slate-500 mb-4 max-w-md mx-auto">Thank you for subscribing to <strong>{subscription.package.name}</strong>! Your application and documents are being reviewed. You'll be notified within 24-48 hours.</p>
+        <div className="bg-slate-50 rounded p-3 text-sm max-w-sm mx-auto text-left">
+          <div className="flex justify-between"><span className="text-slate-500">Package</span><span className="font-semibold">{subscription.package.name}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Amount Paid</span><span className="font-semibold">{ETB(subscription.amountPaid)}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Payment Ref</span><span className="font-mono text-xs">{subscription.paymentRef}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Submitted</span><span className="text-xs">{new Date(subscription.createdAt).toLocaleString()}</span></div>
+        </div>
+      </Card>
+    )
+  }
+
+  // Subscription cancelled / rejected
+  if (subscription.status === 'CANCELLED') {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Application Not Approved</h2>
+        <p className="text-slate-500 mb-4 max-w-md mx-auto">{subscription.reviewNote || 'Your application was not approved. Please update your information and resubmit.'}</p>
+        <Button asChild className="amz-bg-yellow hover:bg-[#f7ca00] text-black">
+          <a href="/vendor/register">Resubmit Application</a>
+        </Button>
+      </Card>
+    )
+  }
+
+  // Subscription expired or suspended
+  if (subscription.status === 'EXPIRED' || subscription.status === 'SUSPENDED') {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Subscription {subscription.status.toLowerCase()}</h2>
+        <p className="text-slate-500 mb-4 max-w-md mx-auto">Your {subscription.package.name} subscription is {subscription.status.toLowerCase()}. Renew now to continue selling.</p>
+        <Button asChild className="amz-bg-yellow hover:bg-[#f7ca00] text-black">
+          <a href="/vendor/pricing">Renew Subscription</a>
+        </Button>
+      </Card>
+    )
+  }
 
   if (loading) return <div className="space-y-4">{Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}</div>
   if (!data) return <div>Failed to load</div>
@@ -77,6 +155,35 @@ function VendorContent() {
 
   return (
     <div className="space-y-4">
+      {/* Subscription status banner */}
+      {subscription && subscription.status === 'ACTIVE' && (
+        <Card className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div className="text-xs text-slate-500 uppercase">Current Plan</div>
+              <div className="font-bold text-lg">{subscription.package.name} <Badge className="bg-emerald-500 hover:bg-emerald-500 ml-1">Active</Badge></div>
+              <div className="text-xs text-slate-600">
+                {subscription.package.productLimit === -1
+                  ? `${subscription.productCount} products listed (Unlimited)`
+                  : `${subscription.productCount} / ${subscription.package.productLimit} products used`
+                }
+                {subscription.package.productLimit !== -1 && subscription.productCount >= subscription.package.productLimit * 0.8 && (
+                  <span className="text-amber-600 ml-2">· Near limit — consider upgrading</span>
+                )}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-slate-500">Renews {subscription.expiresAt ? new Date(subscription.expiresAt).toLocaleDateString() : '—'}</div>
+              <Button size="sm" variant="outline" asChild><a href="/vendor/pricing">Upgrade</a></Button>
+            </div>
+          </div>
+          {subscription.package.productLimit !== -1 && (
+            <div className="mt-2 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-emerald-500 h-full transition-all" style={{ width: `${Math.min(100, (subscription.productCount / subscription.package.productLimit) * 100)}%` }} />
+            </div>
+          )}
+        </Card>
+      )}
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Revenue (30d)" value={ETB(stats.revenue30)} delta={12} icon={TrendingUp} color="bg-emerald-500" sub={`Net: ${ETB(stats.net30)}`} />
