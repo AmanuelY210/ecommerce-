@@ -6,6 +6,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { db } from "@/lib/db";
 
+// Prevent static prerendering — this app uses client-side auth (Zustand + localStorage)
+// which isn't available during SSR/prerendering on Vercel
+export const dynamic = 'force-dynamic'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
