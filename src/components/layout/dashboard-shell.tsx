@@ -9,6 +9,16 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/co
 import { useAuth } from '@/lib/store'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
+interface SessionUserInfo {
+  id: string
+  email: string
+  name: string
+  role: string
+  phone?: string | null
+  avatar?: string | null
+  vendorId?: string | null
+}
+
 interface NavItem { label: string; href: string; icon: LucideIcon; badge?: number }
 interface DashboardShellProps {
   children: React.ReactNode
@@ -19,7 +29,7 @@ interface DashboardShellProps {
 }
 
 function SidebarContent({ current, nav, role, pathname, onNavigate }: {
-  current: { name: string; email: string; avatar?: string | null }
+  current: SessionUserInfo
   nav: NavItem[]
   role: string
   pathname: string
@@ -75,9 +85,12 @@ export function DashboardShell({ children, nav, title, role, requiredRole }: Das
   const router = useRouter()
   const pathname = usePathname()
   const user = useAuth((s) => s.user)
+  const setUser = useAuth((s) => s.setUser)
   const logout = useAuth((s) => s.logout)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [authState, setAuthState] = useState<'loading' | 'ok' | 'redirecting'>('loading')
+  // Local copy of the session user (used when Zustand store hasn't been hydrated yet)
+  const [sessionUser, setSessionUser] = useState<SessionUserInfo | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -98,6 +111,11 @@ export function DashboardShell({ children, nav, title, role, requiredRole }: Das
           router.replace('/')
           return
         }
+        // Sync the fetched user into the Zustand store so the header and other
+        // components have the correct data (handles page-refresh case where the
+        // store is empty but the cookie session is still valid).
+        setUser(data.user)
+        setSessionUser(data.user)
         setAuthState('ok')
       } catch {
         if (!cancelled) {
@@ -108,13 +126,19 @@ export function DashboardShell({ children, nav, title, role, requiredRole }: Das
     }
     check()
     return () => { cancelled = true }
-  }, [requiredRole, router])
+  }, [requiredRole, router, setUser])
 
   if (authState !== 'ok') {
     return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="text-slate-400">Loading...</div></div>
   }
 
-  const current = user!
+  // Prefer the Zustand user, fall back to the session user fetched from /api/auth/me
+  const current = user || sessionUser
+  if (!current) {
+    // Should never happen because authState === 'ok' implies we have a user,
+    // but guard against any race condition to avoid a null-deref crash.
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="text-slate-400">Loading...</div></div>
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-50">
