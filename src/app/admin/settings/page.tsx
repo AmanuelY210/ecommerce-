@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
-import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Save, Globe, Palette, Share2, Search, Phone, CreditCard, ToggleLeft, Truck, Image as ImageIcon, ChevronDown, ChevronUp } from 'lucide-react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Save, Globe, Palette, Share2, Search, Phone, CreditCard, ToggleLeft, Truck, Image as ImageIcon, ChevronDown, ChevronUp, Check, Loader2, Cloud } from 'lucide-react'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { SectionHeader } from '@/components/dashboard/widgets'
 import { Card } from '@/components/ui/card'
@@ -38,25 +38,67 @@ function SettingsContent() {
   const [settings, setSettings] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'pending' | 'saving' | 'saved'>('idle')
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const settingsRef = useRef<Record<string, string>>({})
 
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       const res = await fetch('/api/settings')
       const d = await res.json()
-      if (!cancelled) { setSettings(d); setLoading(false) }
+      if (!cancelled) { setSettings(d); settingsRef.current = d; setLoading(false) }
     }
     load()
     return () => { cancelled = true }
   }, [])
 
   const get = (key: string, fallback = '') => settings[key] ?? fallback
-  const set = (key: string, value: string) => setSettings(s => ({ ...s, [key]: value }))
+  const set = (key: string, value: string) => {
+    setSettings(s => {
+      const next = { ...s, [key]: value }
+      settingsRef.current = next
+      return next
+    })
+    // Trigger debounced auto-save
+    scheduleSave()
+  }
   const getBool = (key: string, fallback = false) => { const v = settings[key]; return v === undefined ? fallback : v === 'true' }
-  const setBool = (key: string, value: boolean) => setSettings(s => ({ ...s, [key]: String(value) }))
+  const setBool = (key: string, value: boolean) => set(key, String(value))
 
+  // Debounced auto-save: saves 1.5 seconds after the last change
+  const scheduleSave = useCallback(() => {
+    setAutoSaveStatus('pending')
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(async () => {
+      setAutoSaveStatus('saving')
+      setSaving(true)
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settingsRef.current),
+        })
+        if (res.ok) {
+          setAutoSaveStatus('saved')
+          clearSettingsCache()
+          // Clear "saved" status after 2 seconds
+          setTimeout(() => setAutoSaveStatus('idle'), 2000)
+        } else {
+          setAutoSaveStatus('idle')
+        }
+      } catch {
+        setAutoSaveStatus('idle')
+      } finally {
+        setSaving(false)
+      }
+    }, 1500)
+  }, [])
+
+  // Manual save (for the Save button)
   const save = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
     setSaving(true)
+    setAutoSaveStatus('saving')
     try {
       const res = await fetch('/api/settings', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -64,9 +106,12 @@ function SettingsContent() {
       })
       if (res.ok) {
         toast.success('Settings saved — changes are live!')
+        setAutoSaveStatus('saved')
         clearSettingsCache()
+        setTimeout(() => setAutoSaveStatus('idle'), 2000)
       } else {
         toast.error('Failed to save settings')
+        setAutoSaveStatus('idle')
       }
     } finally { setSaving(false) }
   }
@@ -75,10 +120,28 @@ function SettingsContent() {
 
   return (
     <div className="space-y-4">
-      <SectionHeader title="Website Settings" description="Full control over your marketplace — branding, header, footer, appearance, SEO, social, payments, and features" action={
-        <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={save} disabled={saving}>
-          <Save className="w-4 h-4 mr-1" /> {saving ? 'Saving...' : 'Save All Settings'}
-        </Button>
+      <SectionHeader title="Website Settings" description="Full control over your marketplace — branding, header, footer, appearance, SEO, social, payments, and features. Changes auto-save as you type." action={
+        <div className="flex items-center gap-3">
+          {/* Auto-save status indicator */}
+          {autoSaveStatus === 'pending' && (
+            <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
+              <Cloud className="w-3 h-3 mr-1" /> Saving...
+            </Badge>
+          )}
+          {autoSaveStatus === 'saving' && (
+            <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Saving...
+            </Badge>
+          )}
+          {autoSaveStatus === 'saved' && (
+            <Badge variant="outline" className="text-emerald-700 border-emerald-300 bg-emerald-50">
+              <Check className="w-3 h-3 mr-1" /> Saved
+            </Badge>
+          )}
+          <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={save} disabled={saving}>
+            <Save className="w-4 h-4 mr-1" /> {saving ? 'Saving...' : 'Save Now'}
+          </Button>
+        </div>
       } />
 
       <Tabs defaultValue="general">
@@ -121,13 +184,14 @@ function SettingsContent() {
               <Field label="Logo Text (highlight part)" value={get('logo_text_highlight', 'market')} onChange={(v) => set('logo_text_highlight', v)} hint="Shown in orange in the header" />
             </div>
             <div>
-              <Label>Logo Image URL (optional — overrides text logo)</Label>
-              <FileUpload label="" value={get('logo_url', '')} onChange={(url) => set('logo_url', url)} accept=".jpg,.jpeg,.png,.svg,.ico,.pdf" maxSize={2 * 1024 * 1024} />
+              <Label>Logo Image (optional — overrides text logo)</Label>
+              <FileUpload label="" value={get('logo_url', '')} onChange={(url) => { set('logo_url', url); scheduleSave() }} accept=".jpg,.jpeg,.png,.svg,.ico" maxSize={2 * 1024 * 1024} />
               <p className="text-xs text-slate-500 mt-1">If set, this image replaces the text logo in the header. Leave empty to use text logo.</p>
             </div>
             <div>
-              <Label>Favicon URL</Label>
-              <Input value={get('favicon_url', '/logo.svg')} onChange={(e) => set('favicon_url', e.target.value)} />
+              <Label>Favicon Image (shown in browser tab)</Label>
+              <FileUpload label="" value={get('favicon_url', '/logo.svg')} onChange={(url) => { set('favicon_url', url); scheduleSave() }} accept=".ico,.png,.svg,.jpg,.jpeg" maxSize={1 * 1024 * 1024} />
+              <p className="text-xs text-slate-500 mt-1">Recommended: 32x32px .ico or .png file. Used as the browser tab icon.</p>
             </div>
             <div>
               <Label>Site Description (used in footer and meta)</Label>
@@ -294,9 +358,12 @@ function SettingsContent() {
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end sticky bottom-0 bg-slate-50 py-3">
+      <div className="flex justify-end items-center gap-3 sticky bottom-0 bg-slate-50 py-3">
+        {autoSaveStatus === 'pending' && <span className="text-xs text-amber-600">Unsaved changes...</span>}
+        {autoSaveStatus === 'saving' && <span className="text-xs text-blue-600 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Saving...</span>}
+        {autoSaveStatus === 'saved' && <span className="text-xs text-emerald-600 flex items-center gap-1"><Check className="w-3 h-3" /> All changes saved</span>}
         <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={save} disabled={saving}>
-          <Save className="w-4 h-4 mr-1" /> {saving ? 'Saving...' : 'Save All Settings'}
+          <Save className="w-4 h-4 mr-1" /> {saving ? 'Saving...' : 'Save Now'}
         </Button>
       </div>
     </div>
