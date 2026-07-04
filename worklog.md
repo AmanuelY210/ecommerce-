@@ -258,3 +258,34 @@ Stage Summary:
 - Markdown supported for page and blog content
 - Verified end-to-end: created a new "Test Banner" → edited it → deleted it (with confirmation)
 - Lint clean, TypeScript clean, zero browser errors
+
+---
+Task ID: cms-error-handling-fix
+Agent: main
+Task: Fix CMS SyntaxError "Failed to execute 'json' on 'Response': Unexpected end of JSON input" when adding/editing pages
+
+Work Log:
+- Root cause: API route handlers were not wrapped in try-catch. When a Prisma error (e.g., unique constraint violation on slug) or any other exception occurred, Next.js returned a 500 with an HTML error page (not JSON). The client's `await res.json()` then crashed with "Unexpected end of JSON input".
+- Added `safeJson()` helper in /admin/cms page that safely parses Response body as JSON, returning {} on empty/non-JSON body. Used in all 4 save() error handlers.
+- Updated all 4 error toasts to show HTTP status code: `Failed (HTTP ${res.status})`
+- Added error toasts to all 4 remove() handlers (were silently failing before)
+- Wrapped ALL 8 API route handlers (GET/POST for banners, pages, blog, faqs + PATCH/DELETE for [id]) in try-catch blocks that:
+  • Catch any exception
+  • Log the error to console with a labeled prefix (e.g., [pages POST])
+  • Return a proper JSON response with { error: message } and appropriate status code
+- Added input validation in POST handlers:
+  • Banners: title and image required
+  • Pages: title required; duplicate slug check returns 409
+  • Blog: title required; duplicate slug check returns 409
+  • FAQs: question and answer required
+- Added duplicate slug check in PATCH handlers for pages and blog (returns 409 with descriptive message)
+- Verified end-to-end:
+  • Tried creating a page with slug "about-us" (already exists) → got toast "A page with slug 'about-us' already exists" (no crash)
+  • Changed slug to "test-page-unique" → got toast "Page created" and page appeared in list
+
+Stage Summary:
+- CMS page no longer crashes on API errors — all responses are safely parsed
+- All 8 API routes return proper JSON error responses with descriptive messages
+- Duplicate slug detection prevents conflicts with 409 status
+- Required field validation returns 400 with clear messages
+- Lint clean, TypeScript clean, zero browser errors

@@ -17,6 +17,18 @@ import { FileUpload } from '@/components/shared/file-upload'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 
+// Safely parse JSON from a Response — returns {} if body is empty or not JSON
+// (avoids "Unexpected end of JSON input" crash when API returns HTML error page)
+async function safeJson<T = any>(res: Response): Promise<T> {
+  try {
+    const text = await res.text()
+    if (!text) return {} as T
+    return JSON.parse(text) as T
+  } catch {
+    return {} as T
+  }
+}
+
 const NAV = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Users', href: '/admin/users', icon: Users },
@@ -83,13 +95,14 @@ function BannersTab() {
       body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
     })
     if (res.ok) { toast.success(editing ? 'Banner updated' : 'Banner created'); setOpen(false); refresh() }
-    else { const d = await res.json(); toast.error(d.error || 'Failed') }
+    else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this banner?')) return
     const res = await fetch(`/api/admin/banners/${id}`, { method: 'DELETE' })
     if (res.ok) { toast.success('Banner deleted'); refresh() }
+    else { toast.error(`Delete failed (HTTP ${res.status})`) }
   }
 
   if (loading) return <div className="space-y-3">{Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-32" />)}</div>
@@ -192,10 +205,10 @@ function PagesTab() {
       body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
     })
     if (res.ok) { toast.success(editing ? 'Page updated' : 'Page created'); setOpen(false); refresh() }
-    else { const d = await res.json(); toast.error(d.error || 'Failed') }
+    else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
   }
 
-  const remove = async (id: string) => { if (!confirm('Delete this page?')) return; const res = await fetch(`/api/admin/pages/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Page deleted'); refresh() } }
+  const remove = async (id: string) => { if (!confirm('Delete this page?')) return; const res = await fetch(`/api/admin/pages/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Page deleted'); refresh() } else { toast.error(`Delete failed (HTTP ${res.status})`) } }
 
   if (loading) return <div className="space-y-3">{Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
 
@@ -289,10 +302,10 @@ function BlogTab() {
       body: JSON.stringify(editing ? { id: editing.id, ...body } : body),
     })
     if (res.ok) { toast.success(editing ? 'Post updated' : 'Post created'); setOpen(false); refresh() }
-    else { const d = await res.json(); toast.error(d.error || 'Failed') }
+    else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
   }
 
-  const remove = async (id: string) => { if (!confirm('Delete this blog post?')) return; const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Post deleted'); refresh() } }
+  const remove = async (id: string) => { if (!confirm('Delete this blog post?')) return; const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Post deleted'); refresh() } else { toast.error(`Delete failed (HTTP ${res.status})`) } }
 
   if (loading) return <div className="space-y-3">{Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
 
@@ -389,10 +402,10 @@ function FaqsTab() {
       body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
     })
     if (res.ok) { toast.success(editing ? 'FAQ updated' : 'FAQ created'); setOpen(false); refresh() }
-    else { const d = await res.json(); toast.error(d.error || 'Failed') }
+    else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
   }
 
-  const remove = async (id: string) => { if (!confirm('Delete this FAQ?')) return; const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('FAQ deleted'); refresh() } }
+  const remove = async (id: string) => { if (!confirm('Delete this FAQ?')) return; const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('FAQ deleted'); refresh() } else { toast.error(`Delete failed (HTTP ${res.status})`) } }
 
   if (loading) return <div className="space-y-3">{Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
 
