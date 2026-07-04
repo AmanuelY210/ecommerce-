@@ -185,3 +185,43 @@ Stage Summary:
 - Image thumbnails and PDF icons in preview
 - Actual filenames and file sizes displayed
 - Lint clean, TypeScript clean, zero browser errors
+
+---
+Task ID: vendor-details-documents
+Agent: main
+Task: Vendor Management — view vendor documents and full data details
+
+Work Log:
+- Updated /api/admin/vendors GET route to accept ?withSubscription=1 query param, which includes the vendor's subscription with package, businessInfo, bankInfo, storeInfo, and documents (all JSON fields parsed)
+- Updated /api/admin/vendors PATCH route to accept reviewNote parameter and sync subscription status when vendor is approved/rejected/suspended/reinstated
+- Updated /api/moderation/queue route to include subscription (with package + all JSON fields parsed) for pending vendors
+- Rewrote /admin/vendors page with:
+  • 5 stat cards (Total, Pending, Approved, Suspended, Rejected)
+  • Search field (by store name, owner name, email, license number)
+  • Tabbed filter (All/Pending/Approved/Suspended/Rejected)
+  • Enhanced vendor table with Package column showing subscription plan + amount
+  • "View" button + quick action buttons (approve/reject/suspend/reinstate) per row
+  • Row click opens details dialog
+  • Comprehensive VendorDetail dialog with 6 sections:
+    - Top stats (sales, orders, rating, commission)
+    - Account Owner (name, email, phone, joined, last login, reviews)
+    - Subscription (package, amount paid, billing cycle, started, expires, commission, product limit, payment ref, features)
+    - Business Information (business name, type, license, TIN, VAT, postal, region, city, sub-city, woreda)
+    - Bank Information (bank name, account holder, account number, Chapa account)
+    - Store Information (store name, hours, address, description, banner image)
+    - Uploaded Documents (grid of document thumbnails — images show preview, PDFs show icon, all clickable to open full-size in new tab)
+  • Review note textarea + contextual action buttons (Approve/Reject for pending, Suspend for approved, Reinstate for suspended)
+- Updated /moderator page vendor approvals table:
+  • Added subscription package info to store cell
+  • License/TIN columns now fall back to subscription.businessInfo if vendor record doesn't have them
+  • Added "Docs" button per pending vendor
+  • New document review dialog showing business info, uploaded documents (clickable thumbnails), bank info, and Approve/Reject buttons
+
+Stage Summary:
+- Admin can click "View" on any vendor to see complete details: account owner, subscription/package, business info, bank info, store info, and all uploaded documents with image previews
+- Moderator can click "Docs" on any pending vendor to review documents before approving
+- Document thumbnails show image preview for JPG/PNG, PDF icon for PDFs, all clickable to open full-size
+- Review note field allows admin/moderator to leave feedback visible to vendor
+- Actions (approve/reject/suspend/reinstate) now sync both vendor.status and subscription.status
+- Search field lets admin find vendors by store name, owner, email, or license number
+- Lint clean, TypeScript clean, zero browser errors
