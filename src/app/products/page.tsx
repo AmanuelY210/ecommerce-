@@ -15,11 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet'
 import { StorefrontShell } from '@/components/layout/storefront-shell'
 import { FilterPanel } from '@/components/storefront/filter-panel'
+import { FALLBACK_PRODUCTS } from '@/lib/fallback-data'
 import { useCart } from '@/lib/store'
 import { ETB } from '@/lib/helpers'
 import { toast } from 'sonner'
 
-interface Product { id: string; name: string; slug: string; price: number; comparePrice?: number | null; images: string[]; rating: number; reviewCount: number; sold: number; stock: number; vendor?: { id: string; storeName: string; verified: boolean } | null; brand?: { name: string } | null }
+interface Product { id: string; name: string; slug: string; price: number; comparePrice?: number | null; images: string[]; rating: number; reviewCount: number; sold: number; stock?: number; vendor?: { id?: string; storeName: string; verified: boolean } | null; brand?: { name: string } | null }
 interface Category { id: string; name: string; slug: string }
 interface Brand { id: string; name: string; slug: string }
 
@@ -88,9 +89,23 @@ function ProductsInner() {
     if (page > 1) params.set('page', String(page))
     fetch(`/api/products?${params}`).then(r => r.json()).then(d => {
       if (cancelled) return
-      setProducts(d.products || [])
-      setTotal(d.total || 0)
-      setPages(d.pages || 1)
+      const prods = d.products || []
+      if (prods.length > 0) {
+        setProducts(prods)
+        setTotal(d.total || 0)
+        setPages(d.pages || 1)
+      } else {
+        // Fallback: use demo data when DB is empty (Vercel without DB)
+        setProducts(FALLBACK_PRODUCTS)
+        setTotal(FALLBACK_PRODUCTS.length)
+        setPages(1)
+      }
+      setLoading(false)
+    }).catch(() => {
+      if (cancelled) return
+      setProducts(FALLBACK_PRODUCTS)
+      setTotal(FALLBACK_PRODUCTS.length)
+      setPages(1)
       setLoading(false)
     })
     return () => { cancelled = true }

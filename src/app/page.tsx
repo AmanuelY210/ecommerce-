@@ -12,6 +12,7 @@ import { StorefrontShell } from '@/components/layout/storefront-shell'
 import { useCart } from '@/lib/store'
 import { ETB } from '@/lib/helpers'
 import { toast } from 'sonner'
+import { FALLBACK_BANNERS, FALLBACK_CATEGORIES, FALLBACK_PRODUCTS, FALLBACK_VENDORS } from '@/lib/fallback-data'
 
 interface Product { id: string; name: string; slug: string; price: number; comparePrice?: number | null; images: string[]; rating: number; reviewCount: number; sold: number; vendor?: { storeName: string; verified: boolean } | null }
 interface Category { id: string; name: string; slug: string; icon?: string | null; image?: string | null }
@@ -43,14 +44,23 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/banners').then(r => r.json()),
-      fetch('/api/categories').then(r => r.json()),
-      fetch('/api/products?deals=1&limit=12').then(r => r.json()),
-      fetch('/api/products?featured=1&limit=12').then(r => r.json()),
-      fetch('/api/products?sort=newest&limit=12').then(r => r.json()),
-      fetch('/api/vendors?top=1&limit=8').then(r => r.json()),
+      fetch('/api/banners').then(r => r.json()).catch(() => []),
+      fetch('/api/categories').then(r => r.json()).catch(() => []),
+      fetch('/api/products?deals=1&limit=12').then(r => r.json()).catch(() => ({ products: [] })),
+      fetch('/api/products?featured=1&limit=12').then(r => r.json()).catch(() => ({ products: [] })),
+      fetch('/api/products?sort=newest&limit=12').then(r => r.json()).catch(() => ({ products: [] })),
+      fetch('/api/vendors?top=1&limit=8').then(r => r.json()).catch(() => []),
     ]).then(([b, c, d, f, n, v]) => {
-      setBanners(b); setCategories(c); setDeals(d.products || []); setFeatured(f.products || []); setNewArrivals(n.products || []); setVendors(v)
+      // Use fallback data if API returns empty (e.g., on Vercel without database)
+      setBanners(Array.isArray(b) && b.length > 0 ? b : FALLBACK_BANNERS)
+      setCategories(Array.isArray(c) && c.length > 0 ? c : FALLBACK_CATEGORIES)
+      const dealsData = d?.products || []
+      setDeals(dealsData.length > 0 ? dealsData : FALLBACK_PRODUCTS.slice(0, 6))
+      const featuredData = f?.products || []
+      setFeatured(featuredData.length > 0 ? featuredData : FALLBACK_PRODUCTS)
+      const newData = n?.products || []
+      setNewArrivals(newData.length > 0 ? newData : FALLBACK_PRODUCTS.slice().reverse())
+      setVendors(Array.isArray(v) && v.length > 0 ? v : FALLBACK_VENDORS)
       setLoading(false)
     })
   }, [])

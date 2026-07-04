@@ -10,11 +10,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StorefrontShell } from '@/components/layout/storefront-shell'
+import { FALLBACK_VENDORS } from '@/lib/fallback-data'
 import { ETB } from '@/lib/helpers'
 
 interface Vendor {
   id: string; storeName: string; slug: string; logo: string | null; banner: string | null;
-  description: string | null; businessType: string; verified: boolean;
+  description: string | null; businessType?: string; verified: boolean;
   rating: number; reviewCount: number; totalSales: number; totalOrders: number;
   packageName: string | null; packageSlug: string | null;
   productCount: number; sampleProducts: any[];
@@ -35,9 +36,13 @@ export default function VendorsPage() {
       const params = new URLSearchParams()
       if (search) params.set('q', search)
       params.set('limit', '100')
-      const res = await fetch(`/api/vendors?${params}`)
-      const d = await res.json()
-      if (!cancelled) { setVendors(d); setLoading(false) }
+      try {
+        const res = await fetch(`/api/vendors?${params}`)
+        const d = await res.json()
+        if (!cancelled) { setVendors(Array.isArray(d) && d.length > 0 ? d : FALLBACK_VENDORS); setLoading(false) }
+      } catch {
+        if (!cancelled) { setVendors(FALLBACK_VENDORS); setLoading(false) }
+      }
     }
     load()
     return () => { cancelled = true }
