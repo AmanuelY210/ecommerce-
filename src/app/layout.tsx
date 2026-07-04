@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { db } from "@/lib/db";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,15 +16,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "ETMarket — Ethiopia's Marketplace",
-  description: "Shop millions of products from trusted Ethiopian vendors. Pay with Chapa or your local bank. Fast delivery across Ethiopia.",
-  keywords: ["Ethiopia marketplace", "Addis Ababa shopping", "Chapa payment", "Ethiopian e-commerce", "ETMarket"],
-  authors: [{ name: "ETMarket Team" }],
-  icons: { icon: "/logo.svg" },
-};
+// Fetch settings server-side for initial metadata
+async function getSettings(): Promise<Record<string, string>> {
+  try {
+    const settings = await db.setting.findMany();
+    const map: Record<string, string> = {};
+    for (const s of settings) map[s.key] = s.value;
+    return map;
+  } catch {
+    return {};
+  }
+}
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSettings();
+  const siteName = s.site_name || 'ETMarket';
+  const title = s.seo_meta_title || `${siteName} — ${s.site_tagline || "Ethiopia's Marketplace"}`;
+  const description = s.seo_meta_description || s.site_description || "Shop millions of products from trusted Ethiopian vendors.";
+  const keywords = s.seo_meta_keywords?.split(',').map(k => k.trim()).filter(Boolean) || ["Ethiopia marketplace", "ETMarket"];
+  const favicon = s.favicon_url || s.logo_url || '/logo.svg';
+
+  return {
+    title,
+    description,
+    keywords,
+    authors: [{ name: `${siteName} Team` }],
+    icons: { icon: favicon },
+    openGraph: {
+      title,
+      description,
+      images: s.seo_og_image ? [s.seo_og_image] : undefined,
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (

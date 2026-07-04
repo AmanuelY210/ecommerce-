@@ -193,14 +193,14 @@ export default function HomePage() {
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">{t('vendors.subtitle')}</p>
             </div>
-            <Link href="/products" className="amz-link text-sm hover:underline">All vendors →</Link>
+            <Link href="/vendors" className="amz-link text-sm hover:underline">All vendors →</Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {loading ? (
               Array.from({length: 8}).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)
             ) : (
               vendors.slice(0, 8).map((v) => (
-                <Link href={`/products?vendor=${v.id}`} key={v.id} className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md hover:border-amz-orange transition-all">
+                <Link href={`/vendors/${v.slug}`} key={v.id} className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md hover:border-amz-orange transition-all">
                   <div className="flex items-center gap-3 mb-2">
                     <img src={v.logo || `https://picsum.photos/seed/${v.id}/80/80`} alt={v.storeName} className="w-12 h-12 rounded-full object-cover" />
                     <div className="min-w-0 flex-1">

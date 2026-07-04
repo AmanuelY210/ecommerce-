@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
               <div className="text-xs text-slate-500 mb-2">{t('product.soldBy')}</div>
               {product.vendor && (
                 <>
-                  <Link href={`/products?vendor=${product.vendor.id}`} className="flex items-center gap-3 mb-3">
+                  <Link href={`/vendors/${product.vendor.slug}`} className="flex items-center gap-3 mb-3">
                     <img src={product.vendor.logo || `https://picsum.photos/seed/${product.vendor.id}/80/80`} alt="" className="w-12 h-12 rounded-full object-cover" />
                     <div className="min-w-0">
                       <div className="font-semibold text-sm flex items-center gap-1 line-clamp-1">
@@ -230,7 +230,7 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={`/products?vendor=${product.vendor.id}`}><Store className="w-3 h-3 mr-1" /> {t('product.visitStore')}</Link>
+                    <Link href={`/vendors/${product.vendor.slug}`}><Store className="w-3 h-3 mr-1" /> {t('product.visitStore')}</Link>
                   </Button>
                 </>
               )}

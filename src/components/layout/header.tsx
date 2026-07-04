@@ -261,6 +261,7 @@ export function Header() {
           <NavLink href="/products?cat=appliances" label="Appliances" />
           <NavLink href="/products?cat=handmade-local-products" label="Made in Ethiopia" />
           <NavLink href="/products?cat=marketplace-deals" label="Deals" />
+          <NavLink href="/vendors" label="Vendors" />
           <NavLink href="/vendor/pricing" label={t('nav.sell')} />
           <NavLink href="/support" label={t('nav.customer')} />
           <div className="ml-auto flex items-center gap-1 pr-2 text-xs text-white/80 hidden md:flex">
