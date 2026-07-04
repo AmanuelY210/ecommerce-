@@ -103,13 +103,15 @@ model Category {
 }
 
 model Brand {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  logo      String?
-  country   String?
-  active    Boolean   @default(true)
-  products  Product[]
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logo        String?
+  country     String?
+  active      Boolean   @default(true)
+  // JSON array of category IDs this brand belongs to (e.g., Samsung → [Electronics, Appliances])
+  categoryIds String?
+  products    Product[]
 }
 
 model Product {

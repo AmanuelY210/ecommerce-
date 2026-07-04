@@ -536,9 +536,149 @@ async function main() {
   }
 
   console.log('🏷️  Creating brands...')
+  // Map each brand to one or more top-level categories it belongs to.
+  // Brands not listed here fall back to "Uncategorized" (shown for all categories).
+  const BRAND_CATEGORIES: Record<string, string[]> = {
+    // Vehicles
+    'Toyota': ['Vehicles'], 'Suzuki': ['Vehicles'], 'Honda': ['Vehicles', 'Industrial & Construction'],
+    'Hyundai': ['Vehicles', 'Industrial & Construction'], 'Ford': ['Vehicles'],
+    'Yamaha': ['Vehicles', 'Music & Instruments'], 'Bajaj': ['Vehicles'],
+    'Varta': ['Vehicles'], 'Amaron': ['Vehicles'], 'Ate': ['Vehicles'],
+    'WeatherTech': ['Vehicles'], 'Castrol': ['Vehicles'], 'Shell': ['Vehicles'], 'Mobil 1': ['Vehicles'],
+    // Electronics
+    'Tecno': ['Electronics'], 'Samsung': ['Electronics', 'Appliances'], 'Apple': ['Electronics', 'Jewelry & Watches'],
+    'Huawei': ['Electronics'], 'Xiaomi': ['Electronics'], 'HP': ['Electronics', 'Office Supplies'],
+    'Dell': ['Electronics', 'Office Supplies'], 'Lenovo': ['Electronics'], 'Sony': ['Electronics', 'Music & Instruments'],
+    'JBL': ['Electronics', 'Music & Instruments'], 'Nokia': ['Electronics'], 'Itel': ['Electronics'],
+    'Asus': ['Electronics'], 'Acer': ['Electronics'], 'MSI': ['Electronics'],
+    'Logitech': ['Electronics', 'Office Supplies'], 'Canon': ['Electronics', 'Office Supplies'],
+    'Epson': ['Electronics', 'Office Supplies'], 'Cisco': ['Electronics', 'Office Supplies'],
+    'TP-Link': ['Electronics'], 'Seagate': ['Electronics'], 'Western Digital': ['Electronics'],
+    'Intel': ['Electronics'], 'AMD': ['Electronics'], 'Nvidia': ['Electronics'],
+    'Kingston': ['Electronics'], 'Corsair': ['Electronics'], 'Microsoft': ['Electronics', 'Digital Products', 'Office Supplies'],
+    'LG': ['Electronics', 'Appliances'], 'Panasonic': ['Electronics', 'Appliances'],
+    'Philips': ['Electronics', 'Appliances'], 'Braun': ['Appliances', 'Health & Beauty'],
+    'Bosch': ['Appliances', 'Industrial & Construction', 'Vehicles'], 'Siemens': ['Appliances', 'Industrial & Construction'],
+    'DJI': ['Electronics'], 'Garmin': ['Electronics', 'Sports & Outdoors'], 'Anker': ['Electronics'],
+    'Fujitsu': ['Electronics', 'Office Supplies'], 'Netgear': ['Electronics'],
+    'Nintendo': ['Electronics', 'Toys & Games'],
+    // Fashion
+    'Nike': ['Fashion', 'Sports & Outdoors'], 'Adidas': ['Fashion', 'Sports & Outdoors'],
+    'Puma': ['Fashion', 'Sports & Outdoors'], 'Gucci': ['Fashion', 'Jewelry & Watches'],
+    'Louis Vuitton': ['Fashion', 'Jewelry & Watches'], 'Tommy Hilfiger': ['Fashion', 'Jewelry & Watches'],
+    'Levis': ['Fashion'], 'Zara': ['Fashion'], 'H&M': ['Fashion', 'Baby Products'],
+    'Clarks': ['Fashion'], 'Ecco': ['Fashion'], 'Steve Madden': ['Fashion'],
+    'Ray-Ban': ['Fashion'], 'Oakley': ['Fashion', 'Sports & Outdoors'],
+    'Casio': ['Fashion', 'Jewelry & Watches', 'Music & Instruments'], 'Fossil': ['Fashion', 'Jewelry & Watches'],
+    'Arrow': ['Fashion'],
+    // Home & Furniture
+    'IKEA': ['Home & Furniture', 'Office Supplies'], 'Herman Miller': ['Home & Furniture', 'Office Supplies'],
+    'Serta': ['Home & Furniture'],
+    // Appliances
+    'Haier': ['Appliances'], 'Dawlance': ['Appliances'], 'Mabe': ['Appliances'], 'Midea': ['Appliances'],
+    'Gree': ['Appliances'], 'DeLonghi': ['Appliances'], 'Westpoint': ['Appliances'],
+    'Ariston': ['Appliances'], 'Bradford White': ['Appliances'], 'Cool Sport': ['Appliances'],
+    // Grocery
+    'Nestle': ['Grocery', 'Baby Products'], 'Heineken': ['Grocery'], 'Bambu': ['Grocery', 'Wholesale & Bulk'],
+    'Megenagna': ['Grocery', 'Books'], 'Kuraz': ['Grocery'], 'Tomoca Coffee Co.': ['Grocery', 'Handmade & Local Products'],
+    'Moyee': ['Grocery', 'Handmade & Local Products'], 'Garden of Coffee': ['Grocery', 'Handmade & Local Products'],
+    'Buna Buna': ['Grocery'], 'Coca-Cola': ['Grocery'], 'Barilla': ['Grocery'],
+    'Filsan': ['Grocery'], 'Double A': ['Grocery', 'Office Supplies', 'Wholesale & Bulk'],
+    'Kality': ['Grocery', 'Agriculture'], 'Mame': ['Grocery'], 'Shoa': ['Grocery'],
+    // Health & Beauty
+    "L'Oreal": ['Health & Beauty'], 'Nivea': ['Health & Beauty'], 'Maybelline': ['Health & Beauty'],
+    'MAC': ['Health & Beauty'], 'Neutrogena': ['Health & Beauty'], "Johnson & Johnson": ['Health & Beauty', 'Baby Products'],
+    'Cetaphil': ['Health & Beauty', 'Baby Products'], 'Centrum': ['Health & Beauty'],
+    'Omron': ['Health & Beauty'], 'Beurer': ['Health & Beauty'], 'Optimum Nutrition': ['Health & Beauty'],
+    'MyProtein': ['Health & Beauty'], 'Sensodyne': ['Health & Beauty'], 'Aquafresh': ['Health & Beauty'],
+    'Colgate': ['Health & Beauty'], 'Shea Moisture': ['Health & Beauty'], 'The Ordinary': ['Health & Beauty'],
+    'Accu-Chek': ['Health & Beauty'],
+    // Sports & Outdoors
+    'Spalding': ['Sports & Outdoors'], 'Asics': ['Sports & Outdoors'], 'Coleman': ['Sports & Outdoors'],
+    'Osprey': ['Sports & Outdoors'], 'Shimano': ['Sports & Outdoors'], 'Daiwa': ['Sports & Outdoors'],
+    'Bowflex': ['Sports & Outdoors'], 'Speedo': ['Sports & Outdoors'], 'Arena': ['Sports & Outdoors'],
+    'Manduka': ['Sports & Outdoors'], 'Trek': ['Sports & Outdoors', 'Vehicles'],
+    'Giant': ['Sports & Outdoors', 'Vehicles'], 'Specialized': ['Sports & Outdoors', 'Vehicles'],
+    'Mikasa': ['Sports & Outdoors'], 'NordicTrack': ['Sports & Outdoors'], 'ProForm': ['Sports & Outdoors'],
+    // Books
+    'Penguin': ['Books'], 'HarperCollins': ['Books'], "O'Reilly": ['Books'],
+    'Cambridge': ['Books'], 'Oxford': ['Books'], 'Bible Society': ['Books'], 'Moleskine': ['Books', 'Office Supplies'],
+    // Office Supplies
+    'Bic': ['Office Supplies'], 'Pilot': ['Office Supplies'], 'Staedtler': ['Office Supplies', 'Arts & Crafts'],
+    'Faber-Castell': ['Office Supplies', 'Arts & Crafts'], 'Staples': ['Office Supplies'],
+    'Texas Instruments': ['Office Supplies'],
+    // Toys & Games
+    'Lego': ['Toys & Games'], 'Hasbro': ['Toys & Games'], 'Mattel': ['Toys & Games'],
+    'Traxxas': ['Toys & Games'], 'Little Tikes': ['Toys & Games'], 'Ravensburger': ['Toys & Games'],
+    'PlayStation': ['Toys & Games', 'Electronics'], 'Xbox': ['Toys & Games', 'Electronics'],
+    // Baby Products
+    'Pampers': ['Baby Products'], 'Huggies': ['Baby Products'], 'Avent': ['Baby Products'],
+    'Tommy Tippee': ['Baby Products'], 'Chicco': ['Baby Products'], 'Graco': ['Baby Products'],
+    'Similac': ['Baby Products'], "Carter's": ['Baby Products'],
+    // Pet Supplies
+    'Pedigree': ['Pet Supplies'], 'Whiskas': ['Pet Supplies'], 'Royal Canin': ['Pet Supplies'],
+    'Purina': ['Pet Supplies'], 'Petco': ['Pet Supplies'], 'Aquarium World': ['Pet Supplies'],
+    // Agriculture
+    'Ethiopian Seeds': ['Agriculture'], 'Dangote Agro': ['Agriculture', 'Industrial & Construction'],
+    'Greenfield Agriculture': ['Agriculture'], 'Netafim': ['Agriculture'], 'Ethio Agro': ['Agriculture'],
+    // Industrial & Construction
+    'Derba': ['Industrial & Construction', 'Wholesale & Bulk'], 'Messebo': ['Industrial & Construction'],
+    'Steely R&D': ['Industrial & Construction'], 'Steel Authority': ['Industrial & Construction'],
+    'Hayat Rota': ['Industrial & Construction'], 'National Paints': ['Industrial & Construction'],
+    'Jotun': ['Industrial & Construction'], 'Cosmoplast': ['Industrial & Construction'],
+    'Lincoln Electric': ['Industrial & Construction'], 'MSA': ['Industrial & Construction'],
+    '3M': ['Industrial & Construction', 'Health & Beauty'], 'Hyundai Heavy': ['Industrial & Construction'],
+    'Makita': ['Industrial & Construction'], 'Dewalt': ['Industrial & Construction'],
+    'Stanley': ['Industrial & Construction', 'Arts & Crafts'],
+    // Jewelry & Watches
+    'Habesha Jewelry': ['Jewelry & Watches', 'Handmade & Local Products'], 'Gondar Silver': ['Jewelry & Watches'],
+    'Cartier': ['Jewelry & Watches'], 'Tiffany': ['Jewelry & Watches'],
+    'Rolex': ['Jewelry & Watches'], 'Omega': ['Jewelry & Watches'], 'Tag Heuer': ['Jewelry & Watches'],
+    // Music & Instruments
+    'Yamaha Guitars': ['Music & Instruments'], 'Fender': ['Music & Instruments'],
+    'Behringer': ['Music & Instruments'], 'Shure': ['Music & Instruments'],
+    'Audio-Technica': ['Music & Instruments'], 'Pioneer': ['Music & Instruments'],
+    'Numark': ['Music & Instruments'], 'Alesis': ['Music & Instruments'],
+    'Masinko Ethiopia': ['Music & Instruments', 'Handmade & Local Products'],
+    // Arts & Crafts
+    'Liquitex': ['Arts & Crafts'], 'Winsor & Newton': ['Arts & Crafts'],
+    'Lion Brand': ['Arts & Crafts'], 'Singer': ['Arts & Crafts'], 'Brother': ['Arts & Crafts', 'Office Supplies'],
+    // Real Estate
+    'Addis Property': ['Real Estate'], 'Bole Realty': ['Real Estate'], 'Cmc Real Estate': ['Real Estate'],
+    // Services
+    'Addis Cleaning': ['Services'], 'Addis Plumbers': ['Services'], 'Addis Electric': ['Services'],
+    'Bole Auto Service': ['Services'], 'Addis Tech Repair': ['Services'],
+    'Addis Designs': ['Services', 'Digital Products'], 'Golden Lens Photography': ['Services'],
+    'Addis Events': ['Services'], 'Addis Delivery': ['Services', 'Gift Shop'],
+    // Digital Products
+    'Kaspersky': ['Digital Products'], 'Norton': ['Digital Products'], 'Bitdefender': ['Digital Products'],
+    'Udemy': ['Digital Products'], 'Coursera': ['Digital Products'],
+    // Gift Shop
+    'Addis Gifts': ['Gift Shop'], 'Addis Flowers': ['Gift Shop'],
+    // Handmade & Local
+    'Lalibela Handicrafts': ['Handmade & Local Products', 'Home & Furniture'],
+    'Habesha Crafts': ['Handmade & Local Products', 'Fashion'],
+    'Dire Dawa Spices': ['Handmade & Local Products', 'Grocery'],
+    'Gondar Leather': ['Handmade & Local Products', 'Fashion'],
+    'Jimma Honey': ['Handmade & Local Products', 'Grocery'],
+    'Wondo Genet': ['Handmade & Local Products', 'Grocery'],
+    // Wholesale uses brands from many categories — no mapping needed
+  }
+
   const brandMap = new Map<string, any>()
   for (const b of BRANDS) {
-    brandMap.set(b, await db.brand.create({ data: { name: b, slug: b.toLowerCase().replace(/[^a-z0-9]+/g, '-'), logo: img(`brand-${b}`, 200, 200), country: 'Various', active: true } }))
+    const cats = BRAND_CATEGORIES[b] || []
+    const catIds = cats.map(c => categoryMap.get(c)?.id).filter(Boolean)
+    brandMap.set(b, await db.brand.create({
+      data: {
+        name: b,
+        slug: b.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        logo: img(`brand-${b}`, 200, 200),
+        country: 'Various',
+        active: true,
+        categoryIds: catIds.length > 0 ? JSON.stringify(catIds) : null,
+      }
+    }))
   }
 
   console.log('📦 Creating products (target: 100+)...')

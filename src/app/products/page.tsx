@@ -46,10 +46,32 @@ function ProductsInner() {
   const deals = sp.get('deals') === '1'
   const featured = sp.get('featured') === '1'
 
+  // Fetch categories once
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(setCategories)
-    fetch('/api/brands').then(r => r.json()).then(setBrands)
   }, [])
+
+  // Fetch brands whenever the selected category changes (category-aware brand filter)
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (cat) {
+      // Find the category ID from slug
+      const catRecord = categories.find(c => c.slug === cat || c.slug.startsWith(cat))
+      if (catRecord) params.set('categoryId', catRecord.id)
+    }
+    fetch(`/api/brands?${params}`).then(r => r.json()).then(d => {
+      setBrands(d)
+      // If currently selected brand is not in the new list, clear it
+      if (brand) {
+        const stillExists = d.some((b: Brand) => b.slug === brand)
+        if (!stillExists) {
+          const next = new URLSearchParams(sp.toString())
+          next.delete('brand')
+          router.replace(`/products?${next.toString()}`)
+        }
+      }
+    })
+  }, [cat, categories])
 
   useEffect(() => {
     let cancelled = false

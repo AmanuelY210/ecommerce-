@@ -27,7 +27,7 @@ const NAV = [
   { label: 'Store Settings', href: '/vendor/settings', icon: Settings },
 ]
 
-interface Product { id: string; name: string; price: number; comparePrice?: number | null; stock: number; lowStockAt: number; status: string; rating: number; sold: number; images: string[]; sku?: string | null; categoryId: string; brandId?: string | null; description: string }
+interface Product { id: string; name: string; price: number; comparePrice?: number | null; stock: number; lowStockAt: number; status: string; rating: number; sold: number; images: string[]; sku?: string | null; barcode?: string | null; categoryId: string; brandId?: string | null; description: string }
 interface Category { id: string; name: string }
 interface Brand { id: string; name: string }
 
@@ -49,8 +49,31 @@ function ProductsContent() {
   useEffect(() => {
     fetch('/api/vendor/products').then(r => r.json()).then(d => { setProducts(d); setLoading(false) })
     fetch('/api/categories').then(r => r.json()).then(setCategories)
-    fetch('/api/brands').then(r => r.json()).then(setBrands)
   }, [])
+
+  // Fetch brands filtered by selected category in the product form
+  useEffect(() => {
+    let cancelled = false
+    const catId = form.categoryId
+    if (!catId) {
+      // Defer to avoid cascading renders; only update if state has actually drifted
+      Promise.resolve().then(() => {
+        if (cancelled) return
+        setBrands([])
+        setForm(s => s.brandId ? { ...s, brandId: '' } : s)
+      })
+      return () => { cancelled = true }
+    }
+    fetch(`/api/brands?categoryId=${catId}`).then(r => r.json()).then(d => {
+      if (cancelled) return
+      setBrands(d)
+      // Reset brand if it's not in the new list
+      if (form.brandId && !d.some((b: Brand) => b.id === form.brandId)) {
+        setForm(s => ({ ...s, brandId: '' }))
+      }
+    })
+    return () => { cancelled = true }
+  }, [form.categoryId])
 
   const openAdd = () => {
     setEditing(null)
@@ -194,9 +217,9 @@ function ProductsContent() {
               </Select>
             </div>
             <div>
-              <Label>Brand</Label>
-              <Select value={form.brandId} onValueChange={(v) => setForm(s => ({...s, brandId: v}))}>
-                <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
+              <Label>Brand {form.categoryId ? `(${brands.length} available)` : '(select category first)'}</Label>
+              <Select value={form.brandId} onValueChange={(v) => setForm(s => ({...s, brandId: v}))} disabled={!form.categoryId || brands.length === 0}>
+                <SelectTrigger><SelectValue placeholder={form.categoryId ? (brands.length ? 'Select brand' : 'No brands for this category') : 'Select category first'} /></SelectTrigger>
                 <SelectContent>{brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>

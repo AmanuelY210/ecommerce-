@@ -65,3 +65,31 @@ Stage Summary:
 - ~140 brands
 - 10 homepage banners
 - Lint clean, TypeScript clean, zero runtime errors
+
+---
+Task ID: brand-category-association
+Agent: main
+Task: Brands should be tied to categories — Vehicles shows only Toyota/Ford/Honda, Electronics shows only Samsung/Apple/HP, etc.
+
+Work Log:
+- Added `categoryIds String?` field to Brand model in Prisma schema (JSON array of category IDs the brand belongs to)
+- Pushed schema change to DB and regenerated Prisma client
+- Created BRAND_CATEGORIES mapping in seed script — each of 140+ brands explicitly mapped to one or more categories (e.g., Toyota→Vehicles, Samsung→Electronics+Appliances, Nike→Fashion+Sports, Bosch→Appliances+Industrial+Vehicles)
+- Updated brand creation in seed to populate categoryIds from the mapping
+- Updated /api/brands route to accept ?categoryId= query param and filter brands by their categoryIds JSON array
+- Updated products page to fetch brands filtered by selected category (refetch whenever category changes), and clear selected brand if it's no longer in the new brand list
+- Updated vendor product form to fetch brands filtered by selected category, with brand dropdown disabled until category is chosen, and dynamic placeholder "(select category first)" / "(N available)" / "No brands for this category"
+- Refactored effects to avoid synchronous setState warnings (deferred via Promise.resolve and async callbacks)
+- Fixed missing `barcode` field on Product interface in vendor products page
+- Discovered Prisma client wasn't returning categoryIds field after schema change — regenerated prisma client (`bun run db:generate`) and restarted dev server to pick up new client
+- Re-seeded database with brand→category associations
+
+Stage Summary:
+- Brands are now properly associated with categories (many-to-many via JSON array)
+- 221 total brands, each mapped to relevant categories
+- Vehicles category shows 18 vehicle brands (Toyota, Ford, Honda, Hyundai, Suzuki, Yamaha, Bajaj, Trek, Giant, Specialized, Bosch, Castrol, Shell, Mobil 1, Varta, Amaron, Ate, WeatherTech)
+- Electronics shows 34 electronics brands (Samsung, Apple, HP, Dell, Lenovo, Asus, Acer, MSI, Sony, JBL, etc.)
+- Fashion shows 19 fashion brands (Nike, Adidas, Puma, Gucci, Louis Vuitton, Tommy Hilfiger, Levis, Zara, H&M, Clarks, Ecco, Steve Madden, Ray-Ban, Oakley, Casio, Fossil, Arrow)
+- Each of the 25 categories has only its relevant brands in both the storefront filter and vendor product form
+- Vendor product form brand dropdown cascades with category selection (disabled until category chosen, auto-clears brand when category changes)
+- Lint clean, TypeScript clean, zero browser errors
