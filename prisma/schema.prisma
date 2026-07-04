@@ -352,6 +352,46 @@ model Banner {
   order     Int      @default(0)
   startAt   DateTime?
   endAt     DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String   // markdown / HTML
+  status    String   @default("PUBLISHED") // DRAFT | PUBLISHED
+  order     Int      @default(0)
+  showInFooter Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String   // markdown / HTML
+  coverImage  String?
+  author      String?
+  tags        String?  // JSON array of tags
+  status      String   @default("PUBLISHED") // DRAFT | PUBLISHED
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String   @default("GENERAL") // GENERAL | ORDERS | PAYMENTS | SHIPPING | RETURNS | ACCOUNT
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Coupon {

@@ -225,3 +225,36 @@ Stage Summary:
 - Actions (approve/reject/suspend/reinstate) now sync both vendor.status and subscription.status
 - Search field lets admin find vendors by store name, owner, email, or license number
 - Lint clean, TypeScript clean, zero browser errors
+
+---
+Task ID: cms-full-crud
+Agent: main
+Task: Fix CMS page — was all hardcoded with "coming soon" toasts; needs full add/edit/delete for banners, pages, blog, FAQs
+
+Work Log:
+- Added 3 new Prisma models: Page (title, slug, content, status, order, showInFooter), BlogPost (title, slug, excerpt, content, coverImage, author, tags, status, publishedAt), Faq (question, answer, category, order, active)
+- Also added createdAt/updatedAt timestamps to Banner model
+- Force-reset DB and pushed new schema, regenerated Prisma client
+- Updated seed script to seed: 6 pages (About Us, Privacy Policy, Terms, Contact Us, Shipping Policy, Return Policy with full markdown content), 3 blog posts (Coffee Festival, How to Start Selling, Top 10 Made-in-Ethiopia), 8 FAQs across categories (ORDERS, PAYMENTS, SHIPPING, RETURNS, GENERAL)
+- Created 8 new API routes for full CRUD:
+  • /api/admin/banners (GET list, POST create) + /api/admin/banners/[id] (PATCH update, DELETE)
+  • /api/admin/pages (GET list, POST create) + /api/admin/pages/[id] (PATCH update, DELETE)
+  • /api/admin/blog (GET list with parsed tags, POST create) + /api/admin/blog/[id] (PATCH update, DELETE)
+  • /api/admin/faqs (GET list, POST create) + /api/admin/faqs/[id] (PATCH update, DELETE)
+- Rewrote /admin/cms page with 4 fully-functional tabs:
+  • BANNERS: Grid of banner cards with image preview, title, link, position badge, active/inactive badge, order. Add/Edit dialog with FileUpload for image, title, link, position select (Home Hero/Strip/Category/Sidebar), order, active switch
+  • PAGES: List of page cards with title, status badge, footer badge, slug, update date. Add/Edit dialog with title, slug, content textarea (markdown), status select, order, showIn-footer switch
+  • BLOG: List of post cards with cover image, title, status badge, excerpt, author, publish date, tags. Add/Edit dialog with title, slug, excerpt, cover image upload, author, tags, status, content textarea (markdown)
+  • FAQs: List of FAQ cards with category badge, question, answer. Add/Edit dialog with question, answer, category select (GENERAL/ORDERS/PAYMENTS/SHIPPING/RETURNS/ACCOUNT), order, active switch
+- All 4 tabs support: Add new, Edit existing, Delete (with confirmation), and auto-refresh after each operation
+- Reused the FileUpload component for banner and blog cover image uploads
+- Fixed useEffect lint errors by inlining load function with cancelled flag pattern
+
+Stage Summary:
+- CMS now fully functional — admin can add, edit, delete banners, pages, blog posts, and FAQs
+- 10 banners, 6 pages, 3 blog posts, 8 FAQs seeded as starting content
+- All operations use real API routes backed by Prisma models (no more "coming soon" toasts)
+- FileUpload component reused for banner images and blog cover images
+- Markdown supported for page and blog content
+- Verified end-to-end: created a new "Test Banner" → edited it → deleted it (with confirmation)
+- Lint clean, TypeScript clean, zero browser errors

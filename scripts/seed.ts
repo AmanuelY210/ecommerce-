@@ -446,7 +446,7 @@ const PRODUCT_TEMPLATES: Record<string, { name: string; priceRange: [number, num
 
 async function main() {
   console.log('🧹 Cleaning existing data...')
-  const tables = ['VendorSubscription','VendorPackage','ModerationLog','AuditLog','Notification','Coupon','Banner','TicketMessage','Ticket','Delivery','Refund','Payment','OrderItem','Order','Wishlist','CartItem','Cart','Review','Product','Brand','Category','Withdrawal','Vendor','Address','User','Setting']
+  const tables = ['Faq','BlogPost','Page','VendorSubscription','VendorPackage','ModerationLog','AuditLog','Notification','Coupon','Banner','TicketMessage','Ticket','Delivery','Refund','Payment','OrderItem','Order','Wishlist','CartItem','Cart','Review','Product','Brand','Category','Withdrawal','Vendor','Address','User','Setting']
   for (const t of tables) {
     await (db as any)[t].deleteMany({})
   }
@@ -839,6 +839,44 @@ async function main() {
   await db.banner.create({ data: { title: 'Flash Deals', image: img('banner-deals', 1400, 500), link: '/products?cat=marketplace-deals', position: 'HOME_HERO', order: 8 } })
   await db.banner.create({ data: { title: 'Real Estate Listings', image: img('banner-realestate', 1400, 500), link: '/products?cat=real-estate', position: 'HOME_HERO', order: 9 } })
   await db.banner.create({ data: { title: 'Agriculture Supplies', image: img('banner-agriculture', 1400, 500), link: '/products?cat=agriculture', position: 'HOME_HERO', order: 10 } })
+
+  console.log('📄 Creating CMS pages...')
+  const pages = [
+    { title: 'About Us', slug: 'about-us', content: '# About ETMarket\n\nETMarket is Ethiopia\'s premier multi-vendor marketplace, connecting customers with verified vendors across all 14 regions of Ethiopia. Founded in 2024, we serve millions of customers with fast delivery, secure payments via Chapa and Ethiopian banks, and a wide selection of products.\n\n## Our Mission\n\nTo empower Ethiopian businesses and provide customers with a world-class online shopping experience.\n\n## Our Values\n\n- Customer first\n- Vendor success\n- Trust and transparency\n- Local empowerment', order: 1 },
+    { title: 'Privacy Policy', slug: 'privacy-policy', content: '# Privacy Policy\n\nETMarket respects your privacy. This policy describes how we collect, use, and protect your personal information.\n\n## Information We Collect\n\n- Name, email, phone number\n- Delivery address\n- Payment information (processed securely via Chapa)\n- Order history\n\n## How We Use Your Information\n\n- Process and deliver orders\n- Communicate about your account\n- Improve our services\n- Send promotional emails (with consent)', order: 2 },
+    { title: 'Terms & Conditions', slug: 'terms-conditions', content: '# Terms & Conditions\n\nBy using ETMarket, you agree to these terms.\n\n## Accounts\n\nYou must create an account to make purchases. You are responsible for keeping your password secure.\n\n## Orders\n\nAll orders are subject to availability. Prices may change without notice. VAT (15%) is included in displayed prices.\n\n## Returns\n\nItems can be returned within 7 days of delivery, subject to vendor return policy.', order: 3 },
+    { title: 'Contact Us', slug: 'contact-us', content: '# Contact Us\n\nWe\'re here to help!\n\n## Customer Support\n\n- Email: support@etmarket.et\n- Phone: +251 911 000 003\n- Hours: 24/7\n\n## Office\n\nBole Road, Addis Ababa, Ethiopia\n\n## Vendor Support\n\n- Email: vendors@etmarket.et\n- Phone: +251 911 000 005', order: 4 },
+    { title: 'Shipping Policy', slug: 'shipping-policy', content: '# Shipping Policy\n\n## Delivery Zones\n\n- Addis Ababa: Same-day delivery for orders before 2 PM\n- Central Ethiopia: 1-2 days\n- Northern Ethiopia (Amhara, Tigray, Afar): 2-3 days\n- Southern Ethiopia: 2-3 days\n- Western & Eastern: 3-4 days\n\n## Shipping Fees\n\n- Addis Ababa: 100 ETB (free over 5,000 ETB)\n- Central: 200 ETB (free over 8,000 ETB)\n- Northern/Southern: 300 ETB (free over 12,000 ETB)\n- Western/Eastern: 400 ETB (free over 15,000 ETB)', order: 5 },
+    { title: 'Return Policy', slug: 'return-policy', content: '# Return Policy\n\nYou can return items within 7 days of delivery if:\n\n- The item is unused and in original packaging\n- You have the original receipt or order number\n- The item is not on the non-returnable list\n\n## How to Return\n\n1. Go to Your Orders\n2. Select the order and click "Request Return"\n3. Choose return reason\n4. Our team will contact you within 24 hours\n\n## Refunds\n\nRefunds are processed within 5-7 business days to your original payment method.', order: 6 },
+  ]
+  for (const p of pages) {
+    await db.page.create({ data: { ...p, status: 'PUBLISHED', showInFooter: true } })
+  }
+
+  console.log('📝 Creating blog posts...')
+  const blogPosts = [
+    { title: 'Ethiopian Coffee Festival 2026: Celebrating the Birthplace of Coffee', slug: 'ethiopian-coffee-festival-2026', excerpt: 'Join us in celebrating Ethiopia\'s rich coffee heritage with special deals on Yirgacheffe, Sidamo, and Harrar beans.', content: '# Ethiopian Coffee Festival 2026\n\nEthiopia is the birthplace of coffee, and we\'re celebrating with a month-long festival of deals, stories, and events.\n\n## Featured Coffees\n\n- **Yirgacheffe** — floral, citrus, tea-like\n- **Sidamo** — sweet, fruity, wine-like\n- **Harrar** — bold, fruity, wine-toned\n\n## Special Deals\n\nUp to 30% off selected Ethiopian coffee brands including Tomoca, Moyee, and Garden of Coffee.', coverImage: img('blog-coffee', 1200, 600), author: 'ETMarket Team', tags: JSON.stringify(['coffee', 'ethiopia', 'festival', 'deals']), publishedAt: new Date() },
+    { title: 'How to Start Selling on ETMarket: A Complete Guide', slug: 'how-to-start-selling', excerpt: 'Learn how to become a vendor on ETMarket, choose the right subscription package, and start selling to millions of Ethiopian customers.', content: '# How to Start Selling on ETMarket\n\n## Step 1: Choose a Package\n\nWe offer 4 vendor packages: Starter (500 ETB/mo), Professional (1,500 ETB/mo), Business (3,000 ETB/mo), and Enterprise (custom).\n\n## Step 2: Pay via Chapa\n\nPay securely with Chapa mobile money, card, or Ethiopian bank transfer.\n\n## Step 3: Submit Business Info\n\nFill in your business name, license number, TIN, and address.\n\n## Step 4: Upload Documents\n\nUpload your National ID, business license, and TIN certificate.\n\n## Step 5: Get Approved\n\nOur team reviews your application within 24-48 hours.\n\n## Step 6: Start Selling\n\nOnce approved, add products and start receiving orders!', coverImage: img('blog-vendor', 1200, 600), author: 'ETMarket Team', tags: JSON.stringify(['vendors', 'guide', 'onboarding']), publishedAt: new Date() },
+    { title: 'Top 10 Made-in-Ethiopia Products to Buy in 2026', slug: 'top-made-in-ethiopia-2026', excerpt: 'From Habesha kemis to Yirgacheffe coffee, discover the best locally-made products from Ethiopian artisans.', content: '# Top 10 Made-in-Ethiopia Products\n\n1. **Habesha Kemis** — Hand-woven traditional dress with gold tibeb border\n2. **Yirgacheffe Coffee** — Single-origin Arabica beans\n3. **Mitmita Spice** — Authentic Ethiopian hot spice blend\n4. **Leather Wallet** — Hand-stitched Ethiopian leather\n5. **Mesobe Basket** — Hand-woven food basket\n6. **Tigray Netela** — Cotton shawl with embroidered border\n7. **Teff Flour** — Gluten-free, traditional injera flour\n8. **Tej Honey** — Pure organic raw honey\n9. **Berbere Spice** — Traditional wot spice blend\n10. **Wooden Carvings** — Hand-carved furniture and decor', coverImage: img('blog-ethio', 1200, 600), author: 'ETMarket Team', tags: JSON.stringify(['ethiopia', 'handmade', 'local', 'shopping']), publishedAt: new Date() },
+  ]
+  for (const post of blogPosts) {
+    await db.blogPost.create({ data: { ...post, status: 'PUBLISHED' } })
+  }
+
+  console.log('❓ Creating FAQs...')
+  const faqs = [
+    { question: 'How do I track my order?', answer: 'Go to "Your Orders" in your account, click on the order, and you\'ll see the live tracking status. You can also use the tracking number provided in your confirmation SMS to track delivery.', category: 'ORDERS', order: 1 },
+    { question: 'What payment methods are supported?', answer: 'We support Chapa (mobile money, card, bank transfer), 19 Ethiopian banks (CBE, Dashen, Abyssinia, Awash, and more), and Cash on Delivery for select areas.', category: 'PAYMENTS', order: 2 },
+    { question: 'How long does delivery take?', answer: 'Addis Ababa: same-day for orders before 2 PM. Central Ethiopia: 1-2 days. Northern/Southern: 2-3 days. Western/Eastern: 3-4 days. You\'ll see the estimated delivery time at checkout based on your region.', category: 'SHIPPING', order: 3 },
+    { question: 'How do I return a product?', answer: 'Items can be returned within 7 days of delivery. Go to Your Orders, select the order, click "Request Return", and choose the reason. Our team will contact you within 24 hours.', category: 'RETURNS', order: 4 },
+    { question: 'How do I become a vendor?', answer: 'Visit our Vendor Pricing page, choose a subscription package (Starter, Professional, Business, or Enterprise), pay via Chapa, submit your business information and documents, and our team will review your application within 24-48 hours.', category: 'GENERAL', order: 5 },
+    { question: 'Is my payment secure?', answer: 'Yes. All payments are processed through Chapa\'s secure payment gateway or directly with Ethiopian banks. We never store your card details. All transactions are encrypted with SSL.', category: 'PAYMENTS', order: 6 },
+    { question: 'Can I change my delivery address after placing an order?', answer: 'You can change the delivery address before the order is shipped. Go to Your Orders, select the order, and click "Edit Address". Once shipped, please contact support immediately.', category: 'ORDERS', order: 7 },
+    { question: 'Do you ship to all regions of Ethiopia?', answer: 'Yes, we ship to all 14 administrative regions of Ethiopia including Addis Ababa, Dire Dawa, Oromia, Amhara, Tigray, Sidama, South Ethiopia, South West Ethiopia Peoples, Central Ethiopia, Afar, Somali, Benishangul-Gumuz, Gambela, and Harari.', category: 'SHIPPING', order: 8 },
+  ]
+  for (const f of faqs) {
+    await db.faq.create({ data: { ...f, active: true } })
+  }
 
   console.log('🎫 Creating support tickets...')
   const ticketSubjects = ['Order not delivered', 'Wrong product received', 'Refund request for order', 'Cannot login to my account', 'Question about product availability', 'Vendor did not respond', 'Payment failed but money deducted', 'Request for invoice']
