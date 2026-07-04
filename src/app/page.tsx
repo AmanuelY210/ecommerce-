@@ -19,12 +19,13 @@ interface Vendor { id: string; storeName: string; slug: string; logo?: string | 
 interface Banner { id: string; title: string; image: string; link?: string | null }
 
 const CAT_ICONS: Record<string, any> = {
-  Electronics: '📱', Fashion: '👕', 'Home & Kitchen': '🏠', 'Beauty & Health': '💄',
-  Groceries: '🛒', 'Sports & Outdoors': '⚽', 'Books & Stationery': '📚', 'Baby & Kids': '🧸',
-  Automotive: '🚗', 'Made in Ethiopia': '🇪🇹',
-  'Computers & Networking': '💻', 'Phones & Accessories': '📲', 'Toys & Games': '🎮',
-  'Pet Supplies': '🐾', 'Garden & Outdoor': '🌱', 'Tools & DIY': '🔧',
-  'Music & Instruments': '🎸', 'Office & Business': '💼',
+  Vehicles: '🚗', Electronics: '📱', Fashion: '👗', 'Home & Furniture': '🛋️',
+  Appliances: '🌀', Grocery: '🛒', 'Health & Beauty': '💄', 'Sports & Outdoors': '⚽',
+  Books: '📚', 'Office Supplies': '📎', 'Toys & Games': '🎮', 'Baby Products': '🍼',
+  'Pet Supplies': '🐾', Agriculture: '🌾', 'Industrial & Construction': '🏗️',
+  'Jewelry & Watches': '💎', 'Music & Instruments': '🎸', 'Arts & Crafts': '🎨',
+  'Real Estate': '🏠', Services: '🛠️', 'Digital Products': '💾', 'Gift Shop': '🎁',
+  'Wholesale & Bulk': '📦', 'Handmade & Local Products': '🤲', 'Marketplace Deals': '🏷️',
 }
 
 export default function HomePage() {
@@ -123,7 +124,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 gap-3">
             {loading ? (
-              Array.from({length: 18}).map((_, i) => <Skeleton key={i} className="aspect-square rounded-lg" />)
+              Array.from({length: 25}).map((_, i) => <Skeleton key={i} className="aspect-square rounded-lg" />)
             ) : (
               categories.map((c) => (
                 <Link key={c.id} href={`/products?cat=${c.slug}`} className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-md hover:border-amz-orange transition-all flex flex-col items-center text-center group">

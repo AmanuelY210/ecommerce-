@@ -38,3 +38,30 @@ Stage Summary:
 - Demo accounts: customer@etmarket.et / vendor@etmarket.et / admin@etmarket.et / moderator@etmarket.et / support@etmarket.et (password: demo1234) with one-click demo login
 - Lint clean, no runtime errors, all API routes returning 200
 - Production-ready MVP for Ethiopian multi-vendor marketplace
+
+---
+Task ID: categories-v2
+Agent: main
+Task: Replace all 18 categories with the user-specified 25-category marketplace structure
+
+Work Log:
+- Replaced CATEGORY_TREE with 25 new top-level categories: Vehicles, Electronics, Fashion, Home & Furniture, Appliances, Grocery, Health & Beauty, Sports & Outdoors, Books, Office Supplies, Toys & Games, Baby Products, Pet Supplies, Agriculture, Industrial & Construction, Jewelry & Watches, Music & Instruments, Arts & Crafts, Real Estate, Services, Digital Products, Gift Shop, Wholesale & Bulk, Handmade & Local Products, Marketplace Deals
+- Each category has 5-20 sub-categories matching the user's spec (e.g., Vehicles has Cars/Motorcycles/Trucks/Buses/Bicycles/Auto Parts/Accessories; Electronics has 20 subs including Computer Components, Networking, Gaming, etc.)
+- Added ~100 new brands to support new categories (Toyota, Yamaha, Bajaj, Trek, Derba, Messebo, Steely R&D, Hayat Rota, Cartier, Rolex, Pioneer, Liquitex, Singer, Addis Property, Addis Cleaning, Microsoft, etc.)
+- Expanded VENDOR_NAMES from 25 to ~60 (added Addis Auto Mart, Bole Motors, Derba Cement Depot, Ethio Agro Supplies, Habesha Jewelry, Addis Art Studio, Addis Property Listings, Addis Cleaning Services, Addis Designs Studio, Software Hub Ethiopia, Addis Gift Shop, Wholesale Addis Hub, Handmade Ethiopia, Flash Deals Addis, etc.)
+- Bumped approved vendor threshold to 55 so most vendors show as APPROVED
+- Replaced PRODUCT_TEMPLATES entirely with templates for all 25 categories — 6-21 products per category, with realistic Ethiopian pricing (Vehicles 55K-1.75M ETB, Real Estate 1.5M-25M ETB, Books 250-4500 ETB, etc.)
+- Updated banners in seed to reference new category slugs (10 banners total, including new Vehicle Deals, Home & Furniture Sale, Appliances Mega Sale, Fashion Week, Flash Deals, Real Estate Listings, Agriculture Supplies)
+- Updated homepage CAT_ICONS map for all 25 categories with unique emojis (🚗📱👗🛋️🌀🛒💄⚽📚📎🎮🍼🐾🌾🏗️💎🎸🎨🏠🛠️💾🎁📦🤲🏷️)
+- Bumped loading skeleton count from 18 to 25 to match new category count
+- Updated header "All" dropdown to include all 25 categories (max-h-70vh with overflow-y-auto for scrolling)
+- Updated header sub-nav quick links to: Electronics, Fashion, Vehicles, Grocery, Appliances, Made in Ethiopia, Deals (7 most popular)
+- Verified end-to-end: homepage renders all 25 categories with icons, "All" dropdown shows 26 items, /products?cat=real-estate shows property listings, /products?cat=agriculture shows seeds/fertilizer/irrigation, no browser errors
+
+Stage Summary:
+- 25 top-level categories, ~190 sub-categories total
+- 1103 products seeded (up from 620)
+- ~60 vendors (55 approved)
+- ~140 brands
+- 10 homepage banners
+- Lint clean, TypeScript clean, zero runtime errors
