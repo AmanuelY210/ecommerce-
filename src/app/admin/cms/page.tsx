@@ -89,10 +89,11 @@ function BannersTab() {
 
   const save = async () => {
     if (!form.title || !form.image) { toast.error('Title and image required'); return }
-    const res = await fetch('/api/admin/banners', {
+    const url = editing ? `/api/admin/banners/${editing.id}` : '/api/admin/banners'
+    const res = await fetch(url, {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
+      body: JSON.stringify(form),
     })
     if (res.ok) { toast.success(editing ? 'Banner updated' : 'Banner created'); setOpen(false); refresh() }
     else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
@@ -199,10 +200,11 @@ function PagesTab() {
 
   const save = async () => {
     if (!form.title) { toast.error('Title required'); return }
-    const res = await fetch('/api/admin/pages', {
+    const url = editing ? `/api/admin/pages/${editing.id}` : '/api/admin/pages'
+    const res = await fetch(url, {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
+      body: JSON.stringify(form),
     })
     if (res.ok) { toast.success(editing ? 'Page updated' : 'Page created'); setOpen(false); refresh() }
     else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
@@ -296,10 +298,11 @@ function BlogTab() {
   const save = async () => {
     if (!form.title) { toast.error('Title required'); return }
     const body = { ...form, tags: form.tags ? form.tags.split(',').map((s: string) => s.trim()).filter(Boolean) : [] }
-    const res = await fetch('/api/admin/blog', {
+    const url = editing ? `/api/admin/blog/${editing.id}` : '/api/admin/blog'
+    const res = await fetch(url, {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing ? { id: editing.id, ...body } : body),
+      body: JSON.stringify(body),
     })
     if (res.ok) { toast.success(editing ? 'Post updated' : 'Post created'); setOpen(false); refresh() }
     else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
@@ -396,10 +399,11 @@ function FaqsTab() {
 
   const save = async () => {
     if (!form.question || !form.answer) { toast.error('Question and answer required'); return }
-    const res = await fetch('/api/admin/faqs', {
+    const url = editing ? `/api/admin/faqs/${editing.id}` : '/api/admin/faqs'
+    const res = await fetch(url, {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing ? { id: editing.id, ...form } : form),
+      body: JSON.stringify(form),
     })
     if (res.ok) { toast.success(editing ? 'FAQ updated' : 'FAQ created'); setOpen(false); refresh() }
     else { const d = await safeJson(res); toast.error(d.error || `Failed (HTTP ${res.status})`) }
