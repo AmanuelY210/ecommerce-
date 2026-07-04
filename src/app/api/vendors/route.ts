@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(searchParams.get('limit')) || 50, 100)
   const q = searchParams.get('q')?.toLowerCase()
 
-  // Only show vendors that have an ACTIVE subscription (paid vendors)
+  // Show ALL vendors with an active subscription (both verified and unverified)
+  // Verified vendors are sorted first, then by sales/orders
   let vendors = await db.vendor.findMany({
     where: {
       status: 'APPROVED',
@@ -26,7 +27,8 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  return NextResponse.json(vendors.map(v => ({
+  // Sort: verified first, then by the requested sort order
+  const result = vendors.map(v => ({
     id: v.id,
     storeName: v.storeName,
     slug: v.slug,
@@ -40,15 +42,20 @@ export async function GET(req: NextRequest) {
     totalSales: v.totalSales,
     totalOrders: v.totalOrders,
     createdAt: v.createdAt,
-    // Subscription info
     packageName: v.subscription?.package?.name || null,
     packageSlug: v.subscription?.package?.slug || null,
-    // Count of approved products
     productCount: v.products.length,
-    // Sample products for preview
     sampleProducts: v.products.map(p => ({
       ...p,
       images: JSON.parse(p.images),
     })),
-  })))
+  }))
+
+  // Sort: verified vendors first, then by original order
+  result.sort((a, b) => {
+    if (a.verified !== b.verified) return a.verified ? -1 : 1
+    return 0 // keep original order within each group
+  })
+
+  return NextResponse.json(result)
 }

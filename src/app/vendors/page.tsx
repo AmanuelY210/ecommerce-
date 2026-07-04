@@ -26,6 +26,7 @@ export default function VendorsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('sales')
+  const [filter, setFilter] = useState('all') // all | verified | unverified
 
   useEffect(() => {
     let cancelled = false
@@ -42,7 +43,18 @@ export default function VendorsPage() {
     return () => { cancelled = true }
   }, [search])
 
-  const sorted = [...vendors].sort((a, b) => {
+  // Filter by verification status
+  const filtered = vendors.filter(v => {
+    if (filter === 'verified') return v.verified
+    if (filter === 'unverified') return !v.verified
+    return true
+  })
+
+  // Sort: verified vendors always first, then by the requested sort order
+  const sorted = [...filtered].sort((a, b) => {
+    // Verified vendors always come first
+    if (a.verified !== b.verified) return a.verified ? -1 : 1
+    // Then sort by the selected criteria
     if (sort === 'sales') return b.totalSales - a.totalSales
     if (sort === 'rating') return b.rating - a.rating
     if (sort === 'orders') return b.totalOrders - a.totalOrders
@@ -50,6 +62,9 @@ export default function VendorsPage() {
     if (sort === 'products') return b.productCount - a.productCount
     return 0
   })
+
+  const verifiedCount = vendors.filter(v => v.verified).length
+  const unverifiedCount = vendors.filter(v => !v.verified).length
 
   const packageBadge: Record<string, { label: string; color: string }> = {
     starter: { label: 'Starter', color: 'bg-blue-50 text-blue-700' },
@@ -63,12 +78,12 @@ export default function VendorsPage() {
       <div className="max-w-[1500px] mx-auto px-2 sm:px-4 py-6 w-full">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Verified Vendors</h1>
-          <p className="text-sm text-slate-500">Browse trusted vendors across Ethiopia. All vendors are verified and have an active subscription.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">All Vendors</h1>
+          <p className="text-sm text-slate-500">Browse all paid vendors across Ethiopia. Verified vendors are shown first with a blue badge.</p>
         </div>
 
-        {/* Search + Sort */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        {/* Search + Sort + Filter */}
+        <div className="flex gap-2 mb-4 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <Input placeholder="Search vendors by name or description..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -83,6 +98,19 @@ export default function VendorsPage() {
               <SelectItem value="name">Sort: Name A-Z</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Verification filter tabs */}
+        <div className="flex gap-2 mb-4">
+          <Button size="sm" variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')} className="text-xs">
+            All ({vendors.length})
+          </Button>
+          <Button size="sm" variant={filter === 'verified' ? 'default' : 'outline'} onClick={() => setFilter('verified')} className="text-xs">
+            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-blue-500" /> Verified ({verifiedCount})
+          </Button>
+          <Button size="sm" variant={filter === 'unverified' ? 'default' : 'outline'} onClick={() => setFilter('unverified')} className="text-xs">
+            Unverified ({unverifiedCount})
+          </Button>
         </div>
 
         {/* Vendor count */}
@@ -105,7 +133,7 @@ export default function VendorsPage() {
               const pkg = v.packageSlug ? packageBadge[v.packageSlug] : null
               return (
                 <Link key={v.id} href={`/vendors/${v.slug}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-all group h-full">
+                  <Card className={`overflow-hidden hover:shadow-lg transition-all group h-full ${v.verified ? 'border-blue-200' : ''}`}>
                     {/* Banner */}
                     <div className="h-24 bg-slate-200 relative overflow-hidden">
                       {v.banner && <img src={v.banner} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />}
@@ -113,14 +141,17 @@ export default function VendorsPage() {
                       <div className="absolute -bottom-6 left-4">
                         <img src={v.logo || `https://picsum.photos/seed/${v.id}/80/80`} alt={v.storeName} className="w-12 h-12 rounded-full border-2 border-white object-cover" />
                       </div>
-                      {/* Package badge */}
-                      {pkg && <Badge className={`absolute top-2 right-2 ${pkg.color}`}>{pkg.label}</Badge>}
+                      {/* Badges */}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {v.verified && <Badge className="bg-blue-500 hover:bg-blue-500 text-white text-xs"><ShieldCheck className="w-3 h-3 mr-0.5" /> Verified</Badge>}
+                        {pkg && <Badge className={pkg.color}>{pkg.label}</Badge>}
+                      </div>
                     </div>
                     {/* Body */}
                     <div className="p-4 pt-8">
                       <div className="flex items-center gap-1 mb-1">
                         <h3 className="font-bold text-sm line-clamp-1 flex-1">{v.storeName}</h3>
-                        {v.verified && <ShieldCheck className="w-4 h-4 text-blue-500 shrink-0" />}
+                        {!v.verified && <Badge variant="outline" className="text-xs text-slate-500">Unverified</Badge>}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                         <span className="flex items-center gap-0.5"><Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {v.rating.toFixed(1)} ({v.reviewCount})</span>
