@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get('type') || 'all'
 
   const [pendingVendors, pendingProducts, flaggedReviews, pendingTickets, highValueOrders] = await Promise.all([
-    db.vendor.findMany({ where: { status: 'PENDING' }, include: { user: true }, orderBy: { createdAt: 'desc' } }),
+    db.vendor.findMany({ where: { status: 'PENDING' }, include: { user: true, subscription: { include: { package: true } } }, orderBy: { createdAt: 'desc' } }),
     db.product.findMany({ where: { status: 'PENDING' }, include: { vendor: true, category: true }, orderBy: { createdAt: 'desc' }, take: 50 }),
     db.review.findMany({ where: { status: 'PENDING' }, include: { user: true, product: true }, orderBy: { createdAt: 'desc' }, take: 50 }),
     db.ticket.findMany({ where: { status: 'OPEN', category: { in: ['PRODUCT', 'VENDOR'] } }, include: { customer: true }, orderBy: { createdAt: 'desc' }, take: 30 }),
@@ -19,7 +19,17 @@ export async function GET(req: NextRequest) {
   ])
 
   return NextResponse.json({
-    vendors: pendingVendors,
+    vendors: pendingVendors.map(v => ({
+      ...v,
+      subscription: v.subscription ? {
+        ...v.subscription,
+        businessInfo: v.subscription.businessInfo ? JSON.parse(v.subscription.businessInfo) : null,
+        bankInfo: v.subscription.bankInfo ? JSON.parse(v.subscription.bankInfo) : null,
+        storeInfo: v.subscription.storeInfo ? JSON.parse(v.subscription.storeInfo) : null,
+        documents: v.subscription.documents ? JSON.parse(v.subscription.documents) : null,
+        package: v.subscription.package ? { ...v.subscription.package, features: JSON.parse(v.subscription.package.features) } : null,
+      } : null,
+    })),
     products: pendingProducts.map(p => ({ ...p, images: JSON.parse(p.images) })),
     reviews: flaggedReviews,
     tickets: pendingTickets,
