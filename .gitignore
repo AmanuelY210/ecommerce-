@@ -52,3 +52,11 @@ prompt
 server.log
 # Skills directory
 /skills/
+# Database (SQLite)
+/db/
+
+# User uploads
+/public/uploads/
+
+# Logs
+*.log
