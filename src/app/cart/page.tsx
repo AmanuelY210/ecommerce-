@@ -27,7 +27,9 @@ export default function CartPage() {
   const [applying, setApplying] = useState(false)
 
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0)
-  const shipping = subtotal > 5000 || subtotal === 0 ? 0 : 150
+  // Default shipping zone for cart preview (Addis Ababa)
+  // Actual zone is computed at checkout based on selected region
+  const shipping = subtotal >= 5000 || subtotal === 0 ? 0 : 100
   const tax = Math.round(subtotal * 0.15)
   const total = subtotal + shipping + tax - couponDiscount
 

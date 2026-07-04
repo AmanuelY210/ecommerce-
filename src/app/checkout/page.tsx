@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Smartphone, CreditCard, Building2, Banknote, ShieldCheck, CheckCircle2, Loader2, MapPin, ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { Smartphone, CreditCard, Building2, Banknote, ShieldCheck, CheckCircle2, Loader2, MapPin, ArrowLeft, ArrowRight, Check, Truck } from 'lucide-react'
 import { useT } from '@/hooks/use-t'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { StorefrontShell } from '@/components/layout/storefront-shell'
 import { useCart, useAuth } from '@/lib/store'
 import { ETB, ETHIOPIAN_BANKS, CHAPA_METHODS } from '@/lib/helpers'
+import { ETHIOPIA_REGIONS, getCitiesForRegion, getSubCitiesForCity, getShippingZone } from '@/lib/ethiopia-geo'
 import { toast } from 'sonner'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 
@@ -34,6 +35,7 @@ export default function CheckoutPage() {
     phone: user?.phone || '',
     region: 'Addis Ababa',
     city: 'Addis Ababa',
+    subCity: '',
     area: '',
     detail: '',
   })
@@ -54,12 +56,13 @@ export default function CheckoutPage() {
   }, [lines.length, step, router])
 
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0)
-  const shipping = subtotal > 5000 ? 0 : 150
+  const shippingZone = getShippingZone(address.region)
+  const shipping = subtotal >= shippingZone.freeThreshold ? 0 : shippingZone.baseFee
   const tax = Math.round(subtotal * 0.15)
   const total = subtotal + shipping + tax - couponDiscount
 
   const handleProceedToPayment = () => {
-    if (!address.fullName || !address.phone || !address.area || !address.detail) {
+    if (!address.fullName || !address.phone || !address.subCity || !address.detail) {
       toast.error('Please fill all address fields')
       return
     }
@@ -326,18 +329,52 @@ export default function CheckoutPage() {
                     <Input value={address.phone} onChange={(e) => setAddress(s => ({...s, phone: e.target.value}))} placeholder="+2519..." />
                   </div>
                   <div>
-                    <Label className="text-sm">Region *</Label>
-                    <select value={address.region} onChange={(e) => setAddress(s => ({...s, region: e.target.value}))} className="w-full h-9 px-3 border border-slate-300 rounded-md text-sm">
-                      <option>Addis Ababa</option><option>Oromia</option><option>Amhara</option><option>Tigray</option><option>SNNPR</option><option>Sidama</option><option>Dire Dawa</option>
+                    <Label className="text-sm">Region / Chartered City *</Label>
+                    <select
+                      value={address.region}
+                      onChange={(e) => {
+                        const newRegion = e.target.value
+                        const cities = getCitiesForRegion(newRegion)
+                        const firstCity = cities[0]?.name || ''
+                        const firstSubCity = cities[0]?.subCities?.[0] || ''
+                        setAddress(s => ({ ...s, region: newRegion, city: firstCity, subCity: firstSubCity, area: '' }))
+                      }}
+                      className="w-full h-9 px-3 border border-slate-300 rounded-md text-sm bg-white"
+                    >
+                      {ETHIOPIA_REGIONS.map(r => (
+                        <option key={r.code} value={r.name}>
+                          {r.name}{r.type === 'REGION' ? ' (Region)' : ' (Chartered City)'}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
-                    <Label className="text-sm">City *</Label>
-                    <Input value={address.city} onChange={(e) => setAddress(s => ({...s, city: e.target.value}))} />
+                    <Label className="text-sm">City / Town *</Label>
+                    <select
+                      value={address.city}
+                      onChange={(e) => {
+                        const newCity = e.target.value
+                        const subs = getSubCitiesForCity(address.region, newCity)
+                        setAddress(s => ({ ...s, city: newCity, subCity: subs[0] || '', area: '' }))
+                      }}
+                      className="w-full h-9 px-3 border border-slate-300 rounded-md text-sm bg-white"
+                    >
+                      {getCitiesForRegion(address.region).map(c => (
+                        <option key={c.name} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <Label className="text-sm">Area / Sub-City *</Label>
-                    <Input value={address.area} onChange={(e) => setAddress(s => ({...s, area: e.target.value}))} placeholder="e.g. Bole, Kazanchis" />
+                    <Label className="text-sm">Sub-City / Woreda *</Label>
+                    <select
+                      value={address.subCity}
+                      onChange={(e) => setAddress(s => ({...s, subCity: e.target.value, area: e.target.value}))}
+                      className="w-full h-9 px-3 border border-slate-300 rounded-md text-sm bg-white"
+                    >
+                      {(getSubCitiesForCity(address.region, address.city)).map(sc => (
+                        <option key={sc} value={sc}>{sc}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <Label className="text-sm">House / Building No.</Label>
@@ -347,6 +384,20 @@ export default function CheckoutPage() {
                 <div className="mt-3">
                   <Label className="text-sm">Delivery Notes (optional)</Label>
                   <Textarea placeholder="e.g. Please call before delivery" rows={2} />
+                </div>
+                {/* Shipping zone info */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 text-blue-900 font-medium">
+                    <Truck className="w-4 h-4" />
+                    Shipping Zone: {shippingZone.name}
+                  </div>
+                  <p className="text-xs text-blue-800 mt-1">
+                    Estimated delivery: {shippingZone.estimatedDays} · Delivery fee: {shippingZone.baseFee} ETB
+                    {subtotal < shippingZone.freeThreshold && (
+                      <span className="ml-1">· Add {ETB(shippingZone.freeThreshold - subtotal)} more for FREE shipping</span>
+                    )}
+                    {subtotal >= shippingZone.freeThreshold && <span className="ml-1 text-emerald-700 font-semibold">· FREE shipping unlocked!</span>}
+                  </p>
                 </div>
                 <Button className="mt-4 amz-bg-yellow hover:bg-[#f7ca00] text-black font-semibold h-12" onClick={handleProceedToPayment}>
                   Continue to Payment <ArrowRight className="w-4 h-4 ml-2" />

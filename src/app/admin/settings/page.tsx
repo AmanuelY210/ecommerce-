@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SHIPPING_ZONES } from '@/lib/ethiopia-geo'
 
 const NAV = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -88,9 +89,13 @@ function SettingsContent() {
       <Card className="p-4">
         <SectionHeader title="Shipping Zones" />
         <div className="space-y-2">
-          {['Addis Ababa — 150 ETB (free over 5,000)', 'Oromia — 250 ETB', 'Amhara — 300 ETB', 'Tigray — 350 ETB', 'SNNPR — 350 ETB', 'Sidama — 350 ETB', 'Dire Dawa — 400 ETB'].map(z => (
-            <div key={z} className="flex items-center justify-between border-b last:border-0 pb-2 last:pb-0">
-              <span className="text-sm">{z}</span>
+          {SHIPPING_ZONES.map(z => (
+            <div key={z.name} className="flex items-center justify-between border-b last:border-0 pb-2 last:pb-0">
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{z.name}</div>
+                <div className="text-xs text-slate-500">{z.regions.join(', ')}</div>
+                <div className="text-xs text-slate-500">Delivery: {z.estimatedDays} · {z.baseFee} ETB · Free over {z.freeThreshold.toLocaleString()} ETB</div>
+              </div>
               <Button size="sm" variant="outline">Edit</Button>
             </div>
           ))}

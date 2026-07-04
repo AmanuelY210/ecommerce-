@@ -132,8 +132,9 @@ export default function AccountPage() {
               <div className="border rounded p-3 mb-2">
                 <div className="font-medium text-sm">Home (Default)</div>
                 <div className="text-sm text-slate-600">Abel Customer, +251911000004</div>
-                <div className="text-sm text-slate-600">Bole, Addis Ababa, Addis Ababa</div>
-                <div className="text-sm text-slate-600">House 123</div>
+                <div className="text-sm text-slate-600">Bole Sub-City, Addis Ababa</div>
+                <div className="text-sm text-slate-600">Addis Ababa (Chartered City), Ethiopia</div>
+                <div className="text-sm text-slate-600">House 123, Floor 2</div>
               </div>
               <Button variant="outline" size="sm">+ Add Address</Button>
             </Card>

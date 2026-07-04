@@ -10,8 +10,30 @@ const hash = (s: string) => createHash('sha256').update(s).digest('hex').slice(0
 const img = (seed: string, w = 600, h = 600) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`
 
 // ─────────── Ethiopian marketplace context ───────────
-const REGIONS = ['Addis Ababa', 'Oromia', 'Amhara', 'Tigray', 'SNNPR', 'Sidama', 'Dire Dawa']
-const CITIES = ['Addis Ababa', 'Adama', 'Bahir Dar', 'Gondar', 'Hawassa', 'Mekelle', 'Jimma', 'Dire Dawa', 'Harar']
+// Real Ethiopia administrative regions (12 regions + 2 chartered cities)
+const REGIONS = [
+  'Addis Ababa', 'Dire Dawa',
+  'Oromia', 'Amhara', 'Tigray', 'Sidama',
+  'South Ethiopia', 'South West Ethiopia Peoples', 'Central Ethiopia',
+  'Afar', 'Somali', 'Benishangul-Gumuz', 'Gambela', 'Harari',
+]
+const CITIES: Record<string, string[]> = {
+  'Addis Ababa': ['Addis Ababa'],
+  'Dire Dawa': ['Dire Dawa'],
+  'Oromia': ['Adama', 'Jimma', 'Ambo', 'Nekemte', 'Shashamane', 'Bale Robe', 'Asella', 'Sebeta', 'Bishoftu', 'Ziway'],
+  'Amhara': ['Bahir Dar', 'Gondar', 'Dessie', 'Debre Markos', 'Debre Birhan', 'Woldia', 'Kombolcha', 'Debre Tabor', 'Lalibela'],
+  'Tigray': ['Mekelle', 'Adwa', 'Axum', 'Adigrat', 'Shire Inda Selassie', 'Wukro', 'Alamata', 'Maichew'],
+  'Sidama': ['Hawassa', 'Yirgalem', 'Dilla', 'Boditi', 'Wendo Genet', 'Leku'],
+  'South Ethiopia': ['Sodo (Wolaita)', 'Arba Minch', 'Areka', 'Dilla'],
+  'South West Ethiopia Peoples': ['Bonga', 'Mizan Teferi', 'Tepi', 'Metu', 'Bedele'],
+  'Central Ethiopia': ['Adama', 'Ambo', 'Sebeta', 'Bishoftu', 'Fitche', 'Shashamane'],
+  'Afar': ['Semera', 'Asaita', 'Awash', 'Gewane', 'Logiya'],
+  'Somali': ['Jijiga', 'Kebri Dahar', 'Gode', 'Degahbur', 'Werder'],
+  'Benishangul-Gumuz': ['Assosa', 'Pawe', 'Bambasi', 'Kamashi', 'Gilgil Beles'],
+  'Gambela': ['Gambela', 'Itang', 'Abobo', 'Gore'],
+  'Harari': ['Harar'],
+}
+const ALL_CITIES = Object.values(CITIES).flat()
 
 const CATEGORY_TREE = [
   { name: 'Electronics', icon: 'Smartphone', children: ['Phones & Tablets', 'Laptops & Computers', 'Audio', 'TVs & Accessories', 'Cameras'] },
@@ -350,7 +372,12 @@ async function main() {
         paymentProvider: pm.provider,
         paymentRef: paymentStatus === 'PAID' ? `${pm.provider.toUpperCase()}-${Math.random().toString(36).substring(2,12).toUpperCase()}` : null,
         subtotal, shipping, tax, commission, total,
-        shippingAddress: JSON.stringify({ region: REGIONS[Math.floor(Math.random()*REGIONS.length)], city: CITIES[Math.floor(Math.random()*CITIES.length)], area: 'Bole', detail: 'House 123', phone: cust.phone || '+251911000000' }),
+        shippingAddress: (() => {
+          const region = REGIONS[Math.floor(Math.random()*REGIONS.length)]
+          const cities = CITIES[region] || ['Addis Ababa']
+          const city = cities[Math.floor(Math.random()*cities.length)]
+          return JSON.stringify({ region, city, subCity: city === 'Addis Ababa' ? ['Bole','Arada','Yeka','Kirkos','Piazza'][Math.floor(Math.random()*5)] : city + ' 01', area: '', detail: 'House 123', phone: cust.phone || '+251911000000' })
+        })(),
         trackingNumber: ['SHIPPED','DELIVERED'].includes(status) ? `TRK${Math.random().toString(36).substring(2,12).toUpperCase()}` : null,
         notes: Math.random() > 0.7 ? 'Please deliver after 5 PM' : null,
         createdAt,

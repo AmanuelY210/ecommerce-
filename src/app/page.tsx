@@ -104,7 +104,7 @@ export default function HomePage() {
       <div className="max-w-[1500px] mx-auto px-2 sm:px-4 py-4 sm:py-6 w-full">
         {/* Trust badges */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <TrustBadge icon={Truck} title="Fast Delivery" subtitle="Addis Ababa same-day" />
+          <TrustBadge icon={Truck} title="Fast Delivery" subtitle="Same-day in Addis Ababa" />
           <TrustBadge icon={ShieldCheck} title="Verified Vendors" subtitle="KYC-checked sellers" />
           <TrustBadge icon={CreditCard} title="Chapa + 19 Banks" subtitle="Pay your way" />
           <TrustBadge icon={Headphones} title="24/7 Support" subtitle="Amharic & English" />

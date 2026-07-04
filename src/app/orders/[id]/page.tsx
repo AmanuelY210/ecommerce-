@@ -177,7 +177,7 @@ export default function OrderDetailPage() {
                 <div className="text-sm space-y-1">
                   <div className="font-semibold">{shippingAddr.fullName}</div>
                   <div className="flex items-center gap-1 text-slate-600"><Phone className="w-3 h-3" /> {shippingAddr.phone}</div>
-                  <div className="text-slate-600">{shippingAddr.area}, {shippingAddr.city}</div>
+                  <div className="text-slate-600">{shippingAddr.subCity}{shippingAddr.subCity && shippingAddr.city ? ', ' : ''}{shippingAddr.city}</div>
                   <div className="text-slate-600">{shippingAddr.region}, Ethiopia</div>
                   <div className="text-slate-600">{shippingAddr.detail}</div>
                 </div>
