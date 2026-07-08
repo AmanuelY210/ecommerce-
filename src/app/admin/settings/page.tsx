@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Save, Globe, Palette, Share2, Search, Phone, CreditCard, ToggleLeft, Truck, Image as ImageIcon, ChevronDown, ChevronUp, Check, Loader2, Cloud } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Save, Globe, Palette, Share2, Search, Phone, CreditCard, ToggleLeft, Truck, Image as ImageIcon, ChevronDown, ChevronUp, Check, Loader2, Cloud, Key, Building2, Plus, Pencil, Trash2 } from 'lucide-react'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { SectionHeader } from '@/components/dashboard/widgets'
 import { Card } from '@/components/ui/card'
@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FileUpload } from '@/components/shared/file-upload'
 import { clearSettingsCache } from '@/hooks/use-settings'
 import { SHIPPING_ZONES } from '@/lib/ethiopia-geo'
@@ -157,6 +159,8 @@ function SettingsContent() {
           <TabsTrigger value="payment"><CreditCard className="w-4 h-4 mr-1" /> Payment</TabsTrigger>
           <TabsTrigger value="features"><ToggleLeft className="w-4 h-4 mr-1" /> Features</TabsTrigger>
           <TabsTrigger value="shipping"><Truck className="w-4 h-4 mr-1" /> Shipping</TabsTrigger>
+          <TabsTrigger value="apikeys"><Key className="w-4 h-4 mr-1" /> API Keys</TabsTrigger>
+          <TabsTrigger value="bankaccounts"><Building2 className="w-4 h-4 mr-1" /> Bank Accounts</TabsTrigger>
         </TabsList>
 
         {/* ─── GENERAL ─── */}
@@ -177,22 +181,60 @@ function SettingsContent() {
 
         {/* ─── BRANDING ─── */}
         <TabsContent value="branding">
-          <Card className="p-4 space-y-3">
+          <Card className="p-4 space-y-4">
             <h3 className="font-bold text-sm">Branding & Identity</h3>
+
+            {/* Live Preview */}
+            <div className="bg-slate-900 rounded-lg p-4">
+              <div className="text-xs text-white/50 uppercase mb-2">Live Preview</div>
+              <div className="flex items-center gap-3">
+                {get('logo_url') ? (
+                  <img src={get('logo_url')} alt="Logo" className="h-10" />
+                ) : (
+                  <span className="text-2xl font-bold text-white">{get('logo_text', 'et')}<span className="text-orange-400">{get('logo_text_highlight', 'market')}</span></span>
+                )}
+                <span className="text-white/40 text-sm">.et</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
+                <img src={get('favicon_url', '/logo.svg') || '/logo.svg'} alt="Favicon" className="w-6 h-6 rounded" />
+                <span className="text-white/50 text-xs">Browser tab favicon preview</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Logo Text (first part)" value={get('logo_text', 'et')} onChange={(v) => set('logo_text', v)} hint="Shown in white in the header" />
               <Field label="Logo Text (highlight part)" value={get('logo_text_highlight', 'market')} onChange={(v) => set('logo_text_highlight', v)} hint="Shown in orange in the header" />
             </div>
-            <div>
-              <Label>Logo Image (optional — overrides text logo)</Label>
-              <FileUpload label="" value={get('logo_url', '')} onChange={(url) => { set('logo_url', url); scheduleSave() }} accept=".jpg,.jpeg,.png,.svg,.ico" maxSize={2 * 1024 * 1024} />
-              <p className="text-xs text-slate-500 mt-1">If set, this image replaces the text logo in the header. Leave empty to use text logo.</p>
+
+            {/* Logo upload with live preview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Logo Image Upload</Label>
+                <FileUpload label="" value={get('logo_url', '')} onChange={(url) => { set('logo_url', url); scheduleSave() }} accept=".jpg,.jpeg,.png,.svg,.ico" maxSize={2 * 1024 * 1024} />
+                {get('logo_url') && (
+                  <div className="mt-2 border rounded p-2 bg-slate-900 text-center">
+                    <img src={get('logo_url')} alt="Logo Preview" className="h-10 mx-auto" />
+                    <p className="text-xs text-white/50 mt-1">Header preview</p>
+                  </div>
+                )}
+                <p className="text-xs text-slate-500 mt-1">Upload a logo image to replace the text logo. Recommended: PNG/SVG, 200x40px.</p>
+              </div>
+
+              {/* Favicon upload with live preview */}
+              <div>
+                <Label>Favicon Image Upload</Label>
+                <FileUpload label="" value={get('favicon_url', '/logo.svg')} onChange={(url) => { set('favicon_url', url); scheduleSave() }} accept=".ico,.png,.svg,.jpg,.jpeg" maxSize={1 * 1024 * 1024} />
+                {get('favicon_url') && (
+                  <div className="mt-2 border rounded p-2 bg-slate-100 flex items-center gap-2">
+                    <img src={get('favicon_url')} alt="Favicon Preview" className="w-8 h-8 rounded" />
+                    <img src={get('favicon_url')} alt="Favicon Small" className="w-4 h-4 rounded" />
+                    <span className="text-xs text-slate-500">Browser tab icon (32px & 16px preview)</span>
+                  </div>
+                )}
+                <p className="text-xs text-slate-500 mt-1">Recommended: 32x32px .ico or .png file.</p>
+              </div>
             </div>
-            <div>
-              <Label>Favicon Image (shown in browser tab)</Label>
-              <FileUpload label="" value={get('favicon_url', '/logo.svg')} onChange={(url) => { set('favicon_url', url); scheduleSave() }} accept=".ico,.png,.svg,.jpg,.jpeg" maxSize={1 * 1024 * 1024} />
-              <p className="text-xs text-slate-500 mt-1">Recommended: 32x32px .ico or .png file. Used as the browser tab icon.</p>
-            </div>
+
             <div>
               <Label>Site Description (used in footer and meta)</Label>
               <Textarea rows={3} value={get('site_description', '')} onChange={(e) => set('site_description', e.target.value)} />
@@ -356,6 +398,16 @@ function SettingsContent() {
             </div>
           </Card>
         </TabsContent>
+
+        {/* ─── API KEYS ─── */}
+        <TabsContent value="apikeys">
+          <ApiKeysTab />
+        </TabsContent>
+
+        {/* ─── BANK ACCOUNTS ─── */}
+        <TabsContent value="bankaccounts">
+          <BankAccountsTab />
+        </TabsContent>
       </Tabs>
 
       <div className="flex justify-end items-center gap-3 sticky bottom-0 bg-slate-50 py-3">
@@ -402,5 +454,206 @@ function Toggle({ label, desc, checked, onChange }: { label: string; desc?: stri
         {desc && <div className="text-xs text-slate-500">{desc}</div>}
       </div>
     </label>
+  )
+}
+
+// ─────────── API Keys Tab ───────────
+function ApiKeysTab() {
+  const [keys, setKeys] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<any | null>(null)
+  const [form, setForm] = useState<any>({ name: '', provider: 'chapa', key: '', secret: '', webhookUrl: '', active: true })
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/admin/api-keys')
+        const d = await res.json()
+        if (!cancelled) { setKeys(Array.isArray(d) ? d : []); setLoading(false) }
+      } catch { if (!cancelled) { setKeys([]); setLoading(false) } }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const refresh = async () => { const res = await fetch('/api/admin/api-keys'); setKeys(await res.json()) }
+
+  const openAdd = () => { setEditing(null); setForm({ name: '', provider: 'chapa', key: '', secret: '', webhookUrl: '', active: true }); setOpen(true) }
+  const openEdit = (k: any) => { setEditing(k); setForm({ ...k }); setOpen(true) }
+
+  const save = async () => {
+    if (!form.name) { toast.error('Name required'); return }
+    const url = editing ? `/api/admin/api-keys/${editing.id}` : '/api/admin/api-keys'
+    const res = await fetch(url, { method: editing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    if (res.ok) { toast.success(editing ? 'API key updated' : 'API key added'); setOpen(false); refresh() }
+    else { const d = await res.json().catch(() => ({})); toast.error(d.error || 'Failed') }
+  }
+
+  const remove = async (id: string) => {
+    if (!confirm('Delete this API key?')) return
+    await fetch(`/api/admin/api-keys/${id}`, { method: 'DELETE' })
+    toast.success('API key deleted'); refresh()
+  }
+
+  if (loading) return <Skeleton className="h-48" />
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Add API Key</Button>
+      </div>
+      {keys.length === 0 ? (
+        <Card className="p-8 text-center">
+          <Key className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500 text-sm mb-3">No API keys configured. Add Chapa, Telebirr, or bank API keys.</p>
+          <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Add API Key</Button>
+        </Card>
+      ) : (
+        <Card>
+          <table className="w-full text-sm">
+            <thead className="border-b bg-slate-50"><tr><th className="text-left p-3">Name</th><th className="text-left p-3">Provider</th><th className="text-left p-3">Key</th><th className="text-left p-3">Webhook</th><th className="text-left p-3">Status</th><th className="p-3"></th></tr></thead>
+            <tbody>
+              {keys.map((k: any) => (
+                <tr key={k.id} className="border-b last:border-0 hover:bg-slate-50">
+                  <td className="p-3 font-medium">{k.name}</td>
+                  <td className="p-3"><Badge variant="outline" className="capitalize">{k.provider}</Badge></td>
+                  <td className="p-3 font-mono text-xs">{k.key ? k.key.substring(0, 8) + '••••••' : '—'}</td>
+                  <td className="p-3 text-xs truncate max-w-[150px]">{k.webhookUrl || '—'}</td>
+                  <td className="p-3">{k.active ? <Badge className="bg-emerald-100 text-emerald-700">Active</Badge> : <Badge variant="outline">Inactive</Badge>}</td>
+                  <td className="p-3"><div className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => openEdit(k)}><Pencil className="w-4 h-4" /></Button><Button size="sm" variant="ghost" className="text-red-500" onClick={() => remove(k.id)}><Trash2 className="w-4 h-4" /></Button></div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? 'Edit API Key' : 'Add API Key'}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Chapa Production" /></div>
+            <div><Label>Provider</Label>
+              <Select value={form.provider} onValueChange={(v) => setForm({ ...form, provider: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="chapa">Chapa</SelectItem><SelectItem value="telebirr">Telebirr</SelectItem><SelectItem value="bank">Bank</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div><Label>API Key / Public Key</Label><Input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder="CHASECK_..." /></div>
+            <div><Label>Secret Key (optional)</Label><Input type="password" value={form.secret || ''} onChange={(e) => setForm({ ...form, secret: e.target.value })} placeholder="CHASECK_..." /></div>
+            <div><Label>Webhook URL (optional)</Label><Input value={form.webhookUrl || ''} onChange={(e) => setForm({ ...form, webhookUrl: e.target.value })} placeholder="https://yoursite.et/api/webhook" /></div>
+            <label className="flex items-center gap-2"><Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} /> Active</label>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={save}><Save className="w-4 h-4 mr-1" /> {editing ? 'Update' : 'Add'} Key</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// ─────────── Bank Accounts Tab ───────────
+function BankAccountsTab() {
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<any | null>(null)
+  const [form, setForm] = useState<any>({ bankName: '', bankCode: '', accountName: '', accountNumber: '', branch: '', swiftCode: '', active: true, order: 0 })
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/admin/bank-accounts')
+        const d = await res.json()
+        if (!cancelled) { setAccounts(Array.isArray(d) ? d : []); setLoading(false) }
+      } catch { if (!cancelled) { setAccounts([]); setLoading(false) } }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const refresh = async () => { const res = await fetch('/api/admin/bank-accounts'); setAccounts(await res.json()) }
+
+  const openAdd = () => { setEditing(null); setForm({ bankName: '', bankCode: '', accountName: '', accountNumber: '', branch: '', swiftCode: '', active: true, order: accounts.length }); setOpen(true) }
+  const openEdit = (a: any) => { setEditing(a); setForm({ ...a }); setOpen(true) }
+
+  const save = async () => {
+    if (!form.bankName || !form.accountNumber) { toast.error('Bank name and account number required'); return }
+    const url = editing ? `/api/admin/bank-accounts/${editing.id}` : '/api/admin/bank-accounts'
+    const res = await fetch(url, { method: editing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    if (res.ok) { toast.success(editing ? 'Bank account updated' : 'Bank account added'); setOpen(false); refresh() }
+    else { const d = await res.json().catch(() => ({})); toast.error(d.error || 'Failed') }
+  }
+
+  const remove = async (id: string) => {
+    if (!confirm('Delete this bank account?')) return
+    await fetch(`/api/admin/bank-accounts/${id}`, { method: 'DELETE' })
+    toast.success('Bank account deleted'); refresh()
+  }
+
+  if (loading) return <Skeleton className="h-48" />
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Add Bank Account</Button>
+      </div>
+      {accounts.length === 0 ? (
+        <Card className="p-8 text-center">
+          <Building2 className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500 text-sm mb-3">No bank accounts configured. Add your business bank accounts for vendor payouts.</p>
+          <Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={openAdd}><Plus className="w-4 h-4 mr-1" /> Add Bank Account</Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {accounts.map((a: any) => (
+            <Card key={a.id} className={`p-4 ${!a.active ? 'opacity-60' : ''}`}>
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="font-bold text-sm">{a.bankName}</div>
+                  <div className="text-xs text-slate-500">{a.bankCode}</div>
+                </div>
+                <Badge variant="outline" className={a.active ? 'bg-emerald-50 text-emerald-700' : ''}>{a.active ? 'Active' : 'Inactive'}</Badge>
+              </div>
+              <div className="text-sm space-y-1">
+                <div><span className="text-slate-500 text-xs">Account Name:</span> <span className="font-medium">{a.accountName}</span></div>
+                <div><span className="text-slate-500 text-xs">Account Number:</span> <span className="font-mono">{a.accountNumber}</span></div>
+                {a.branch && <div><span className="text-slate-500 text-xs">Branch:</span> {a.branch}</div>}
+                {a.swiftCode && <div><span className="text-slate-500 text-xs">SWIFT:</span> <span className="font-mono">{a.swiftCode}</span></div>}
+              </div>
+              <div className="flex gap-1 mt-3">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(a)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                <Button size="sm" variant="ghost" className="text-red-500" onClick={() => remove(a.id)}><Trash2 className="w-3 h-3" /></Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? 'Edit Bank Account' : 'Add Bank Account'}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Bank Name *</Label><Input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder="Commercial Bank of Ethiopia" /></div>
+              <div><Label>Bank Code</Label><Input value={form.bankCode} onChange={(e) => setForm({ ...form, bankCode: e.target.value })} placeholder="CBE" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Account Name *</Label><Input value={form.accountName} onChange={(e) => setForm({ ...form, accountName: e.target.value })} placeholder="ETMarket PLC" /></div>
+              <div><Label>Account Number *</Label><Input value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value })} placeholder="1000-2034-567890" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Branch (optional)</Label><Input value={form.branch || ''} onChange={(e) => setForm({ ...form, branch: e.target.value })} placeholder="Bole Branch" /></div>
+              <div><Label>SWIFT Code (optional)</Label><Input value={form.swiftCode || ''} onChange={(e) => setForm({ ...form, swiftCode: e.target.value })} placeholder="CBETETAA" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Display Order</Label><Input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} /></div>
+              <label className="flex items-center gap-2 pt-6"><Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} /> Active</label>
+            </div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button className="amz-bg-yellow hover:bg-[#f7ca00] text-black" onClick={save}><Save className="w-4 h-4 mr-1" /> {editing ? 'Update' : 'Add'} Account</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

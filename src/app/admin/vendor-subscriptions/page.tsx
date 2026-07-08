@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Check, X, Eye, Pause, Play, Clock, RefreshCw, Shield } from 'lucide-react'
+import { LayoutDashboard, Users, Store, Package, Wallet, Settings, FileText, ShieldCheck, Crown, Check, X, Eye, Pause, Play, Clock, RefreshCw, Shield, ExternalLink } from 'lucide-react'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { SectionHeader, StatCard, EmptyState } from '@/components/dashboard/widgets'
 import { Card } from '@/components/ui/card'
@@ -34,6 +34,7 @@ interface Sub {
   amountPaid: number
   paymentRef: string | null
   paymentProvider: string | null
+  paymentMethod: string | null
   startedAt: string | null
   expiresAt: string | null
   autoRenew: boolean
@@ -240,14 +241,41 @@ function SubsContent() {
                 </div>
                 {/* Documents */}
                 <div className="border rounded p-3">
-                  <div className="text-xs text-slate-500 uppercase mb-2">Uploaded Documents</div>
+                  <div className="text-xs text-slate-500 uppercase mb-2">Uploaded Documents — Click to view full size</div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {viewing.documents && Object.entries(viewing.documents).filter(([_, v]) => v).map(([k, v]) => (
-                      <div key={k} className="border rounded overflow-hidden">
-                        <img src={v as string} alt={k} className="w-full h-24 object-cover" />
-                        <div className="text-xs p-1.5 capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}</div>
-                      </div>
-                    ))}
+                    {viewing.documents && Object.entries(viewing.documents).filter(([_, v]) => v).map(([k, v]) => {
+                      const url = v as string
+                      const isPdf = url.toLowerCase().endsWith('.pdf')
+                      const labels: Record<string,string> = { nationalId: 'National ID', businessLicense: 'Business License', tinCertificate: 'TIN Certificate', storePhoto: 'Store Photo', selfieVerification: 'Selfie Verification' }
+                      return (
+                        <a key={k} href={url} target="_blank" rel="noopener noreferrer" className="border rounded overflow-hidden hover:shadow-md transition-shadow group block">
+                          <div className="aspect-video bg-slate-100 overflow-hidden relative">
+                            {isPdf ? (
+                              <div className="w-full h-full flex items-center justify-center"><FileText className="w-10 h-10 text-red-500" /></div>
+                            ) : (
+                              <img src={url} alt={labels[k] || k} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            )}
+                            <div className="absolute top-1 right-1 bg-black/60 text-white rounded p-1"><ExternalLink className="w-3 h-3" /></div>
+                          </div>
+                          <div className="text-xs p-1.5 font-medium">{labels[k] || k}</div>
+                        </a>
+                      )
+                    })}
+                  </div>
+                  {(!viewing.documents || Object.values(viewing.documents).every((v: any) => !v)) && (
+                    <p className="text-xs text-slate-400 text-center py-2">No documents uploaded</p>
+                  )}
+                </div>
+                {/* Payment Receipt */}
+                <div className="border rounded p-3">
+                  <div className="text-xs text-slate-500 uppercase mb-2">Payment Receipt</div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><span className="text-slate-500">Amount Paid:</span> <span className="font-bold text-emerald-600">{ETB(viewing.amountPaid)}</span></div>
+                    <div><span className="text-slate-500">Payment Ref:</span> <span className="font-mono text-xs">{viewing.paymentRef || '—'}</span></div>
+                    <div><span className="text-slate-500">Provider:</span> <span className="capitalize">{viewing.paymentProvider || '—'}</span></div>
+                    <div><span className="text-slate-500">Method:</span> <span className="capitalize">{viewing.paymentMethod || '—'}</span></div>
+                    <div><span className="text-slate-500">Billing Cycle:</span> <span>{viewing.billingCycle || '—'}</span></div>
+                    <div><span className="text-slate-500">Auto Renew:</span> <span>{viewing.autoRenew ? 'Yes' : 'No'}</span></div>
                   </div>
                 </div>
                 {/* Review note */}

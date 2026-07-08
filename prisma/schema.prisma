@@ -449,6 +449,32 @@ model Setting {
   value String
 }
 
+model BankAccount {
+  id          String   @id @default(cuid())
+  bankName    String
+  bankCode    String
+  accountName String
+  accountNumber String
+  branch      String?
+  swiftCode   String?
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String   // Chapa Production, Telebirr Webhook, etc.
+  provider    String   // chapa | telebirr | bank | other
+  key         String   // The actual API key/token
+  secret      String?  // Optional secret/secret key
+  webhookUrl  String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // ───────────────────────── Vendor Subscription System ─────────────────────────
 
 model VendorPackage {
